@@ -1,0 +1,9 @@
+mobs.untarget.knockout: true
+
+players.cause.knockout: true
+mobs.cause.knockout: true
+nonmobs.cause.knockout: true
+
+protect.ko.blocks: true
+
+bleedout.time: 90

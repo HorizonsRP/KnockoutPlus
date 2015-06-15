@@ -1,0 +1,28 @@
+name: Knockout Plus
+main: io.github.archemedes.knockoutplus.KnockoutPlus
+description: This plugin puts the 'cute' back in execute. Fight to the death or friendly brawl? The choice is yours. 
+version: 1.85
+depend: [ProtocolLib]
+authors: [Arche, Kowaman]
+
+commands:
+   revive:
+      description: This command lets you assist a knocked out character.
+      permission: knockoutplus.revive
+      usage: /revive [player]
+   reviveall:
+      description: This command saves all currently knocked out players
+      usage: /reviveall
+   damage:
+     description: This command causes you to damage yourself
+     permission: knockoutplus.revive
+     aliases: [d]
+     usage: /damage [damage amount]
+   d20:
+     description: Instant ko-worthy damage
+     permission: knockoutplus.revive
+     usage: /d20
+     aliases: [d40, d48]
+   togglerevive:
+      description: This command lets you assist a knocked out character.
+      usage: /togglerevive [mobs/environment/players]     
