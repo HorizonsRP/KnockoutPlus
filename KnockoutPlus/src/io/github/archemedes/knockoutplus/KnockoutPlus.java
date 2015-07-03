@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import net.minecraft.server.v1_8_R3.PacketPlayOutRelEntityMove;
+import net.minecraft.server.v1_8_R3.PacketPlayOutEntity;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -455,7 +455,7 @@ public final class KnockoutPlus extends JavaPlugin
 		packet.getIntegers().write(0, Integer.valueOf(p.getEntityId()));
 		packet.getBlockPositionModifier().write(0, new BlockPosition(l.getBlockX(), 0, l.getBlockZ()));
 		protocol.broadcastServerPacket(packet);
-		final PacketPlayOutRelEntityMove move = new PacketPlayOutRelEntityMove(p.getEntityId(), (byte)0, (byte)(l.getBlockY()+1), (byte)0, false);
+		final PacketPlayOutEntity.PacketPlayOutRelEntityMove move = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(p.getEntityId(), (byte)0, (byte)(l.getBlockY()+1), (byte)0, false);
 		for (Player t : targets) {
 			if (p != t)
 			((CraftPlayer)t).getHandle().playerConnection.sendPacket(move);

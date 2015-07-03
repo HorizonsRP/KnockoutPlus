@@ -1,0 +1,5 @@
+name: Knockout-Plus
+main: io.github.archemedes.knockoutplus.KnockoutPlus
+version: 1.1.1
+
+commands:
