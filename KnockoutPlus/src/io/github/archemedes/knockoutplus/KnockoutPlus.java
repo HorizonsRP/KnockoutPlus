@@ -279,11 +279,11 @@ public final class KnockoutPlus extends JavaPlugin
 			}
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("reviveall")) {
-			if ((sender.isOp()) || (!(sender instanceof Player))) CorpseRegistry.reviveAll(); else
+			if ((sender.hasPermission("nexus.moderator")) || (!(sender instanceof Player))) CorpseRegistry.reviveAll(); else
 				sender.sendMessage("§cYou do not have permission to use this!");
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("togglerevive")) {
-			if ((args.length == 1) && (sender.isOp())) {
+			if ((args.length == 1) && ((sender.hasPermission("nexus.moderator")))) {
 				if (args[0].equalsIgnoreCase("players")) {
 					if (playersKO) sender.sendMessage("Players will no longer cause knockout!"); else
 						sender.sendMessage("Players will now cause knockout!");
