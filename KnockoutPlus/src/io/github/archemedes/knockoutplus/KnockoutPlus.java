@@ -391,7 +391,8 @@ public final class KnockoutPlus extends JavaPlugin
 		Location l = b.getLocation().getBlock().getLocation();
 
 		int height = 0;
-		while (l.getBlock().getRelative(BlockFace.DOWN).isEmpty()) {
+		while (l.getBlock().getRelative(BlockFace.DOWN).isEmpty()
+				&& l.getBlockY() > 0) {
 			l.add(0.0D, -1.0D, 0.0D);
 			height++;
 		}
