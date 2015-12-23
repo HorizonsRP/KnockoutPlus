@@ -24,6 +24,7 @@ import net.minecraft.server.v1_8_R3.PacketPlayOutEntity;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -155,15 +156,46 @@ public final class KnockoutPlus extends JavaPlugin
 			int slot;
 			try
 			{
-				slot = Integer.parseInt(args[0]);
+				slot = Math.abs(Integer.parseInt(args[0]));
 			}
 			catch (NumberFormatException e)
 			{
 				return false;
 			}
-			EntityDamageEvent event = new EntityDamageEvent(p, EntityDamageEvent.DamageCause.SUICIDE, slot);
-			Bukkit.getPluginManager().callEvent(event);
-			p.damage(event.getDamage());
+			if (slot > 5) {
+				EntityDamageEvent event = new EntityDamageEvent(p, EntityDamageEvent.DamageCause.SUICIDE, slot);
+				Bukkit.getPluginManager().callEvent(event);
+				p.damage(event.getDamage());
+			} else {
+				if (p.getGameMode() == GameMode.SURVIVAL) p.damage(slot);
+				else {
+					p.sendMessage("You have to be in survival to do this.");
+					return true;
+				}
+			}
+
+			return true;
+		}if (cmd.getName().equalsIgnoreCase("hunger")) {
+			if (!(sender instanceof Player))
+				return true;
+			if (args.length != 1) {
+				return false;
+			}
+			Player p = (Player)sender;
+			int slot;
+			try
+			{
+				slot = Math.abs(Integer.parseInt(args[0]));
+			}
+			catch (NumberFormatException e)
+			{
+				return false;
+			}
+			if (slot >= 20) {
+				p.setFoodLevel(0);
+			} else {
+				p.setFoodLevel(p.getFoodLevel()-slot);
+			}
 
 			return true;
 		}if (cmd.getName().equalsIgnoreCase("d20")) {
