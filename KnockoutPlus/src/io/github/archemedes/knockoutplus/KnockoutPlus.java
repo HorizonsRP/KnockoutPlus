@@ -167,7 +167,7 @@ public final class KnockoutPlus extends JavaPlugin
 				Bukkit.getPluginManager().callEvent(event);
 				p.damage(event.getDamage());
 			} else {
-				if (p.getGameMode() == GameMode.SURVIVAL) p.damage(slot);
+				if (p.getGameMode() == GameMode.SURVIVAL) p.setHealth(p.getHealth() - slot);
 				else {
 					p.sendMessage("You have to be in survival to do this.");
 					return true;
