@@ -2,6 +2,8 @@ package io.github.archemedes.knockoutplus;
 
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
+import lombok.extern.java.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -148,7 +150,10 @@ implements Listener
 			return;
 		}
 
-		if (((e instanceof EntityDamageByEntityEvent)) || (e.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) || (e.getCause() == EntityDamageEvent.DamageCause.PROJECTILE)) {
+		if (((e instanceof EntityDamageByEntityEvent)) 
+				|| (e.getCause() == EntityDamageEvent.DamageCause.ENTITY_ATTACK) 
+				|| (e.getCause() == EntityDamageEvent.DamageCause.PROJECTILE)
+				|| (e.getCause() == EntityDamageEvent.DamageCause.MAGIC)) {
 			return;
 		}
 		if (e.getDamage() < p.getHealth()) {
@@ -179,26 +184,20 @@ implements Listener
 	public void onPlayerHit(EntityDamageByEntityEvent e)
 	{
 		if (!(e.getEntity() instanceof Player)) return;
-
 		Player p = (Player)e.getEntity();
-
 		if (p.getGameMode() == GameMode.CREATIVE) return;
-
 		if (CorpseRegistry.isKnockedOut(p)) {
 			e.setCancelled(true);
 			return;
 		}
 
 		if (KnockoutPlus.wasRecentlyKnockedOut(p)) return;
-
-		if (e.getDamage() < p.getHealth()) {
+		if (e.getFinalDamage() < p.getHealth()) {
 			return;
 		}
 		double trueDamage = e.getFinalDamage();
 		if (trueDamage < p.getHealth() - 0.1D) return;
-
 		Entity killer = e.getDamager();
-
 		if ((killer instanceof Player)) {
 			if (KnockoutPlus.playersKO) {
 				Player k = (Player)killer;
@@ -376,16 +375,19 @@ implements Listener
 					if (oldTaskId == null) break;
 					Bukkit.getScheduler().cancelTask(oldTaskId.intValue());
 
-					break; } if ((e.getAction() != Action.RIGHT_CLICK_BLOCK) && (e.getAction() != Action.RIGHT_CLICK_AIR)) break;
-					PlayerReviveEvent event = new PlayerReviveEvent(p, v, PlayerReviveEvent.Reason.MERCY);
-					Bukkit.getPluginManager().callEvent(event);
-					if (event.isCancelled()) return;
-
-					p.sendMessage("§6You have allowed " + this.plugin.giveName(v) + "§6 to live.");
-					KnockoutPlus.revivePlayer(v, 4.0D);
-					c.unregister();
-
+					break; 
+				} if ((e.getAction() != Action.RIGHT_CLICK_BLOCK) && (e.getAction() != Action.RIGHT_CLICK_AIR)) {
 					break;
+				}
+				PlayerReviveEvent event = new PlayerReviveEvent(p, v, PlayerReviveEvent.Reason.MERCY);
+				Bukkit.getPluginManager().callEvent(event);
+				if (event.isCancelled()) return;
+
+				p.sendMessage("§6You have allowed " + this.plugin.giveName(v) + "§6 to live.");
+				KnockoutPlus.revivePlayer(v, 4.0D);
+				c.unregister();
+
+				break;
 			}
 		}
 	}
