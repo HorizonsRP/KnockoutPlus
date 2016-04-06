@@ -26,10 +26,10 @@ public class PlayerReviveEvent extends KnockoutPlusEvent
 		return this.reason;
 	}
 
-	public static enum Reason {
+	public enum Reason {
 		MERCY, 
 		COMMAND_REVIVE, 
-		OPERATOR;
+		OPERATOR
 	}
 }
 

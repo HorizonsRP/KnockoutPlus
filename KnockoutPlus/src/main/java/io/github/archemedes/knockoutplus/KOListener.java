@@ -2,48 +2,30 @@ package io.github.archemedes.knockoutplus;
 
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
-import lombok.extern.java.Log;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import java.util.logging.Logger;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Server;
-import org.bukkit.block.Block;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockIgniteEvent;
-import org.bukkit.event.block.BlockPistonExtendEvent;
-import org.bukkit.event.block.BlockPistonRetractEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
-import org.bukkit.scheduler.BukkitScheduler;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
+import java.util.UUID;
 
 public class KOListener
 implements Listener
@@ -98,7 +80,7 @@ implements Listener
 			if ((l.getWorld().equals(loc.getWorld())) && 
 					(l.distance(loc) <= 2.0D)) {
 				e.setCancelled(true);
-				e.getPlayer().sendMessage("§cSomeone is dying here! Have some respect!");
+				e.getPlayer().sendMessage(ChatColor.RED+"Someone is dying here! Have some respect!");
 				return;
 			}
 		}
@@ -115,7 +97,7 @@ implements Listener
 			if ((l.getWorld().equals(loc.getWorld())) && 
 					(l.distance(loc) <= 2.0D)) {
 				e.setCancelled(true);
-				e.getPlayer().sendMessage("§cSomeone is dying here! Have some respect!");
+				e.getPlayer().sendMessage(ChatColor.RED+"Someone is dying here! Have some respect!");
 				return;
 			}
 		}
@@ -309,7 +291,7 @@ implements Listener
 					Location l = c.getLocation();
 					if ((l.getWorld().equals(loc.getWorld())) && (l.distance(loc) <= 4.0D)) {
 						e.setCancelled(true);
-						e.getPlayer().sendMessage("§cSomeone is dying here! Have some respect!");
+						e.getPlayer().sendMessage(ChatColor.RED+"Someone is dying here! Have some respect!");
 						return;
 					}
 
@@ -343,7 +325,7 @@ implements Listener
 				if ((e.getAction() == Action.LEFT_CLICK_BLOCK) || (e.getAction() == Action.LEFT_CLICK_AIR))
 				{
 					announceKill(p, v);
-					p.sendMessage("§7§o(Hold still or your action will be interrupted.)");
+					p.sendMessage(String.valueOf(ChatColor.GOLD)+ChatColor.BOLD+"(Hold still or your action will be interrupted.)");
 					p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 40, 80, true));
 
 					final Location chantSpot = p.getLocation();
@@ -371,7 +353,7 @@ implements Listener
 					}
 					, 40L);
 
-					Integer oldTaskId = (Integer)chants.put(p.getUniqueId(), Integer.valueOf(taskId));
+					Integer oldTaskId = chants.put(p.getUniqueId(), Integer.valueOf(taskId));
 					if (oldTaskId == null) break;
 					Bukkit.getScheduler().cancelTask(oldTaskId.intValue());
 
@@ -383,7 +365,7 @@ implements Listener
 				Bukkit.getPluginManager().callEvent(event);
 				if (event.isCancelled()) return;
 
-				p.sendMessage("§6You have allowed " + this.plugin.giveName(v) + "§6 to live.");
+				p.sendMessage(ChatColor.GOLD + "You have allowed " + this.plugin.giveName(v) + ChatColor.GOLD + " to live.");
 				KnockoutPlus.revivePlayer(v, 4.0D);
 				c.unregister();
 
@@ -394,7 +376,7 @@ implements Listener
 
 	private void interrupt(Player p) {
 		if (chants.containsKey(p.getUniqueId())) {
-			int taskId = ((Integer)chants.remove(p.getUniqueId())).intValue();
+			int taskId = chants.remove(p.getUniqueId()).intValue();
 
 			Bukkit.getScheduler().cancelTask(taskId);
 			if (p.hasPotionEffect(PotionEffectType.SLOW_DIGGING))
@@ -408,49 +390,49 @@ implements Listener
 		int dice = this.rnd.nextInt(20);
 		String killMsg;
 		switch (dice) { case 1:
-			killMsg = "§6" + v.getDisplayName() + "§6 was no match for you."; break;
+			killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + " was no match for you."; break;
 		case 2:
-			killMsg = "§6Justice has been brought down upon " + v.getDisplayName() + "§6 this day."; break;
+			killMsg = ChatColor.GOLD + "Justice has been brought down upon " + v.getDisplayName() + ChatColor.GOLD + " this day."; break;
 		case 3:
-			killMsg = "§6The ground runs red with the blood of " + v.getDisplayName() + "§6."; break;
+			killMsg = ChatColor.GOLD + "The ground runs red with the blood of " + v.getDisplayName() + ChatColor.GOLD + "."; break;
 		case 4:
-			killMsg = "§6It's all over for " + v.getDisplayName() + "§6."; break;
+			killMsg = ChatColor.GOLD + "It's all over for " + v.getDisplayName() + ChatColor.GOLD + "."; break;
 		case 5:
-			killMsg = "§6" + v.getDisplayName() + "§6 will question your might no longer."; break;
+			killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + " will question your might no longer."; break;
 		case 6:
-			killMsg = "§6" + v.getDisplayName() + "§6 should've thought twice about challenging you."; break;
+			killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + " should've thought twice about challenging you."; break;
 		case 7:
-			killMsg = "§6It's a one-way trip to the Monks for " + v.getDisplayName(); break;
+			killMsg = ChatColor.GOLD + "It's a one-way trip to the Monks for " + v.getDisplayName(); break;
 		case 8:
-			killMsg = "§6" + v.getDisplayName() + "§6's weakness will taint the planes no more."; break;
+			killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + "'s weakness will taint the planes no more."; break;
 		case 9:
-			killMsg = "§6" + v.getDisplayName() + "§6 has met their superior today."; break;
+			killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + " has met their superior today."; break;
 		default:
-			killMsg = "§6You have sentenced " + this.plugin.giveName(v) + "§6 to die.";
+			killMsg = ChatColor.GOLD + "You have sentenced " + this.plugin.giveName(v) + ChatColor.GOLD + " to die.";
 		}
 
 		dice = this.rnd.nextInt(20);
 		String deathMsg;
 		switch (dice) { case 1:
-			deathMsg = "§9The merciless " + this.plugin.giveName(p) + "§9 has stricken you down."; break;
+			deathMsg = ChatColor.BLUE + "The merciless " + this.plugin.giveName(p) + ChatColor.BLUE + " has stricken you down."; break;
 		case 2:
-			deathMsg = "§9The Monks will know that " + this.plugin.giveName(p) + "§9 has sent you."; break;
+			deathMsg = ChatColor.BLUE + "The Monks will know that " + this.plugin.giveName(p) + ChatColor.BLUE + " has sent you."; break;
 		case 3:
-			deathMsg = "§c" + this.plugin.giveName(p) + "§c deemed you unfit to live."; break;
+			deathMsg = ChatColor.RED + "" + this.plugin.giveName(p) + ChatColor.RED + " deemed you unfit to live."; break;
 		case 4:
-			deathMsg = "§c" + this.plugin.giveName(p) + "§c sees fit to end your misery."; break;
+			deathMsg = ChatColor.RED + "" + this.plugin.giveName(p) + ChatColor.RED + " sees fit to end your misery."; break;
 		case 5:
-			deathMsg = "§c" + this.plugin.giveName(p) + "§c deals death this day."; break;
+			deathMsg = ChatColor.RED + "" + this.plugin.giveName(p) + ChatColor.RED + " deals death this day."; break;
 		case 6:
-			deathMsg = "§c" + this.plugin.giveName(p) + "§c deals the final blow."; break;
+			deathMsg = ChatColor.RED + "" + this.plugin.giveName(p) + ChatColor.RED + " deals the final blow."; break;
 		case 7:
-			deathMsg = "§cWoe upon those that dare challenge " + this.plugin.giveName(p); break;
+			deathMsg = ChatColor.RED + "Woe upon those that dare challenge " + this.plugin.giveName(p); break;
 		case 8:
-			deathMsg = "§cThe cold-blooded " + this.plugin.giveName(p) + "§c shall show you no mercy."; break;
+			deathMsg = ChatColor.RED + "The cold-blooded " + this.plugin.giveName(p) + ChatColor.RED + " shall show you no mercy."; break;
 		case 9:
-			deathMsg = "§cThe hand of " + this.plugin.giveName(p) + "§c chose to sever your lifeline."; break;
+			deathMsg = ChatColor.RED + "The hand of " + this.plugin.giveName(p) + ChatColor.RED + " chose to sever your lifeline."; break;
 		default:
-			deathMsg = "§c" + this.plugin.giveName(p) + "§c has sentenced you to die.";
+			deathMsg = ChatColor.RED + "" + this.plugin.giveName(p) + ChatColor.RED + " has sentenced you to die.";
 		}
 
 		p.sendMessage(killMsg);

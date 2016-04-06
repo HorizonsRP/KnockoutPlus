@@ -10,24 +10,11 @@ import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.EnumWrappers.Particle;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import net.minecraft.server.v1_8_R3.PacketPlayOutEntity;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
@@ -42,6 +29,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public final class KnockoutPlus extends JavaPlugin
 {
@@ -106,12 +98,12 @@ public final class KnockoutPlus extends JavaPlugin
 			}
 		});*/
 
-		protocol.addPacketListener(new PacketAdapter(this, new PacketType[] { PacketType.Play.Server.NAMED_ENTITY_SPAWN })
+		protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN)
 		{
 			public void onPacketSending(PacketEvent event)
 			{
 				PacketContainer packet = event.getPacket();
-				final int id = ((Integer)packet.getIntegers().read(0)).intValue();
+				final int id = packet.getIntegers().read(0).intValue();
 				
 
 				for (final Corpse c : CorpseRegistry.getCorpses())
@@ -136,7 +128,7 @@ public final class KnockoutPlus extends JavaPlugin
 	{
 		for (Corpse c : CorpseRegistry.getCorpses()) {
 			Player p = KOListener.getPlayer(c.getVictim());
-			p.sendMessage("§cAn evil entity has condemned you.");
+			p.sendMessage(ChatColor.RED + "An evil entity has condemned you.");
 			wake(p, null, false);
 			removePlayer(p);
 			p.damage(1.0D);
@@ -218,12 +210,12 @@ public final class KnockoutPlus extends JavaPlugin
 			final Player target = Bukkit.getServer().getPlayer(args[0]);
 
 			if (target == null) {
-				sender.sendMessage("§c" + args[0] + " is not online!");
+				sender.sendMessage(ChatColor.RED + "" + args[0] + " is not online!");
 				return false;
 			}
 
 			if (!CorpseRegistry.isKnockedOut(target)) {
-				sender.sendMessage("§c" + args[0] + " cannot be helped.");
+				sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped.");
 				return true;
 			}
 
@@ -244,35 +236,35 @@ public final class KnockoutPlus extends JavaPlugin
 			player = (Player)sender;
 
 			if (CorpseRegistry.isKnockedOut(player)) {
-				sender.sendMessage("§cYou are knocked out!");
+				sender.sendMessage(ChatColor.RED + "You are knocked out!");
 				return true;
 			}
 
 			if (player.equals(target)) {
-				sender.sendMessage("§cYou cannot revive yourself!");
+				sender.sendMessage(ChatColor.RED + "You cannot revive yourself!");
 				return true;
 			}
 
 			if (player.equals(killer)) {
-				sender.sendMessage("§cUse a right click on this player instead!");
+				sender.sendMessage(ChatColor.RED + "Use a right click on this player instead!");
 				return true;
 			}
 
 			if (!player.getLocation().getWorld().equals(target.getLocation().getWorld())) {
-				sender.sendMessage("§c" + args[0] + " cannot be helped!");
+				sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped!");
 				return true;
 			}if (player.getLocation().distance(target.getLocation()) > 20.0D) {
-				sender.sendMessage("§c" + args[0] + " cannot be helped!");
+				sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped!");
 				return true;
 			}if (player.getLocation().distance(target.getLocation()) > 3.0D) {
-				sender.sendMessage("§bYou must move closer to help them.");
+				sender.sendMessage("ï¿½bYou must move closer to help them.");
 				return true;
 			}
 
 			player.getWorld().playSound(player.getLocation(), Sound.DIG_WOOL, 3.5F, -1.0F);
-			player.sendMessage("§eYou bend down to try and assist " + giveName(target));
-			player.sendMessage("§7§o(Hold still or your action will be interrupted.)");
-			target.sendMessage("§eYou are being assisted by " + giveName(player));
+			player.sendMessage("ï¿½eYou bend down to try and assist " + giveName(target));
+			player.sendMessage("ï¿½7ï¿½o(Hold still or your action will be interrupted.)");
+			target.sendMessage("ï¿½eYou are being assisted by " + giveName(player));
 
 			final Location chantSpot = player.getLocation();
 
@@ -292,8 +284,8 @@ public final class KnockoutPlus extends JavaPlugin
 							if (event.isCancelled()) return;
 
 							player.getWorld().playSound(player.getLocation(), Sound.ZOMBIE_UNFECT, 1.2F, 1.0F);
-							player.sendMessage("§6You have saved " + KnockoutPlus.this.giveName(target) + " §6from a grisly fate.");
-							target.sendMessage("§6You have been saved, but you still feel weak");
+							player.sendMessage(ChatColor.GOLD + "You have saved " + KnockoutPlus.this.giveName(target) + " ï¿½6from a grisly fate.");
+							target.sendMessage(ChatColor.GOLD + "You have been saved, but you still feel weak");
 							target.sendMessage(ChatColor.DARK_RED + "Caution: Being incapacitated again shall mean your demise.");
 
 							KnockoutPlus.revivePlayer(target, 4.0D);
@@ -305,14 +297,14 @@ public final class KnockoutPlus extends JavaPlugin
 			}
 			, 100L);
 
-			Integer oldTaskId = (Integer)KOListener.chants.put(player.getUniqueId(), Integer.valueOf(taskId));
+			Integer oldTaskId = KOListener.chants.put(player.getUniqueId(), Integer.valueOf(taskId));
 			if (oldTaskId != null) {
 				Bukkit.getScheduler().cancelTask(oldTaskId.intValue());
 			}
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("reviveall")) {
 			if ((sender.hasPermission("nexus.moderator")) || (!(sender instanceof Player))) CorpseRegistry.reviveAll(); else
-				sender.sendMessage("§cYou do not have permission to use this!");
+				sender.sendMessage(ChatColor.RED + "You do not have permission to use this!");
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("togglerevive")) {
 			if ((args.length == 1) && ((sender.hasPermission("nexus.moderator")))) {
@@ -362,7 +354,7 @@ public final class KnockoutPlus extends JavaPlugin
 		UUID u = p.getUniqueId();
 		if (recentKos.containsKey(u)) {
 			long time = System.currentTimeMillis();
-			if (time < ((Long)recentKos.get(u)).longValue() + 600000L) return true;
+			if (time < recentKos.get(u).longValue() + 600000L) return true;
 		}
 
 		return false;
@@ -370,8 +362,8 @@ public final class KnockoutPlus extends JavaPlugin
 
 	void koPlayer(Player p)
 	{
-		p.sendMessage("§cYou have been knocked out and will die if not aided!");
-		p.sendMessage("§2");
+		p.sendMessage(ChatColor.RED + "You have been knocked out and will die if not aided!");
+		p.sendMessage("ï¿½2");
 
 		if (p.getFoodLevel() < 3) {
 			p.setFoodLevel(3);
@@ -383,10 +375,10 @@ public final class KnockoutPlus extends JavaPlugin
 
 	void koPlayer(Player p, final Player k)
 	{
-		p.sendMessage("§cYou were defeated by §o" + k.getDisplayName());
+		p.sendMessage(ChatColor.RED + "You were defeated by " + ChatColor.BOLD + k.getDisplayName());
 
-		k.sendMessage("§6You have defeated §o" + p.getDisplayName());
-		k.sendMessage("§o§9 RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
+		k.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
+		k.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
 
 		KOListener.verdictDelay.add(k.getUniqueId());
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
@@ -552,8 +544,3 @@ public final class KnockoutPlus extends JavaPlugin
 		return p.getDisplayName() + ChatColor.GRAY + ChatColor.ITALIC + " (" + p.getName() + ")" + ChatColor.RESET;
 	}
 }
-
-/* Location:           C:\Users\Nick\Desktop\Minecraft\LOTC\LeadDev\plugins\KnockoutPlus.jar
- * Qualified Name:     io.github.archemedes.knockoutplus.KnockoutPlus
- * JD-Core Version:    0.6.2
- */

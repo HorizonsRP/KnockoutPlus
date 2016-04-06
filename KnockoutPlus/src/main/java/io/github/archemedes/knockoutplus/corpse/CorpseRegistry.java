@@ -5,14 +5,11 @@ import com.google.common.collect.Maps;
 import io.github.archemedes.knockoutplus.KOListener;
 import io.github.archemedes.knockoutplus.KnockoutPlus;
 import io.github.archemedes.knockoutplus.PlayerReviveEvent;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+
+import java.util.*;
 
 public class CorpseRegistry
 {
@@ -47,7 +44,7 @@ public class CorpseRegistry
 				Bukkit.getPluginManager().callEvent(event);
 				if (!event.isCancelled()) {
 					KnockoutPlus.revivePlayer(p, p.getMaxHealth());
-					p.sendMessage("§6An Aengul smiles upon you.");
+					p.sendMessage("ï¿½6An Aengul smiles upon you.");
 					iter.remove();
 					UUID killer = c.getKiller();
 					if (killer != null) kills.remove(killer, entry.getKey()); 
@@ -85,8 +82,8 @@ public class CorpseRegistry
 				Player p = KOListener.getPlayer(c.getVictim());
 
 				if (p != null) {
-					p.sendMessage("§cYou are starting to lose consciousness!");
-					p.sendMessage("§2");
+					p.sendMessage("ï¿½cYou are starting to lose consciousness!");
+					p.sendMessage("ï¿½2");
 				} else {
 					Bukkit.getLogger().warning("[KO+] Player was null while we tried to warn: " + c.getVictim());
 				}
@@ -100,7 +97,7 @@ public class CorpseRegistry
 	}
 
 	public static Corpse getCorpse(Player p) {
-		return (Corpse)victims.get(p.getUniqueId());
+		return victims.get(p.getUniqueId());
 	}
 
 	public static Set<Corpse> getVictims(Player p) {
