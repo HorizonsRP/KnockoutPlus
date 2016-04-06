@@ -257,14 +257,14 @@ public final class KnockoutPlus extends JavaPlugin
 				sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped!");
 				return true;
 			}if (player.getLocation().distance(target.getLocation()) > 3.0D) {
-				sender.sendMessage("�bYou must move closer to help them.");
+				sender.sendMessage(ChatColor.AQUA + "You must move closer to help them.");
 				return true;
 			}
 
 			player.getWorld().playSound(player.getLocation(), Sound.DIG_WOOL, 3.5F, -1.0F);
-			player.sendMessage("�eYou bend down to try and assist " + giveName(target));
-			player.sendMessage("�7�o(Hold still or your action will be interrupted.)");
-			target.sendMessage("�eYou are being assisted by " + giveName(player));
+			player.sendMessage(ChatColor.YELLOW + "You bend down to try and assist " + giveName(target));
+			player.sendMessage(String.valueOf(ChatColor.GRAY) + ChatColor.BOLD + "(Hold still or your action will be interrupted.)");
+			target.sendMessage(ChatColor.YELLOW + "You are being assisted by " + giveName(player));
 
 			final Location chantSpot = player.getLocation();
 
@@ -284,7 +284,7 @@ public final class KnockoutPlus extends JavaPlugin
 							if (event.isCancelled()) return;
 
 							player.getWorld().playSound(player.getLocation(), Sound.ZOMBIE_UNFECT, 1.2F, 1.0F);
-							player.sendMessage(ChatColor.GOLD + "You have saved " + KnockoutPlus.this.giveName(target) + " �6from a grisly fate.");
+							player.sendMessage(ChatColor.GOLD + "You have saved " + KnockoutPlus.this.giveName(target) + ChatColor.GOLD + " from a grisly fate.");
 							target.sendMessage(ChatColor.GOLD + "You have been saved, but you still feel weak");
 							target.sendMessage(ChatColor.DARK_RED + "Caution: Being incapacitated again shall mean your demise.");
 
@@ -363,7 +363,7 @@ public final class KnockoutPlus extends JavaPlugin
 	void koPlayer(Player p)
 	{
 		p.sendMessage(ChatColor.RED + "You have been knocked out and will die if not aided!");
-		p.sendMessage("�2");
+		p.sendMessage(String.valueOf(ChatColor.DARK_GREEN));
 
 		if (p.getFoodLevel() < 3) {
 			p.setFoodLevel(3);
