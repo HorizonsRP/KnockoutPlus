@@ -1,5 +1,7 @@
 package io.github.archemedes.knockoutplus;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
 import org.bukkit.*;
@@ -30,8 +32,8 @@ import java.util.UUID;
 public class KOListener
 implements Listener
 {
-	static ArrayList<UUID> verdictDelay = new ArrayList();
-	static HashMap<UUID, Integer> chants = new HashMap();
+	static ArrayList<UUID> verdictDelay = Lists.newArrayList();
+	static HashMap<UUID, Integer> chants = Maps.newHashMap();
 	private final Random rnd = new Random();
 	private final KnockoutPlus plugin;
 
@@ -282,7 +284,7 @@ implements Listener
 		Location loc;
 		if ((e.getAction() == Action.RIGHT_CLICK_BLOCK) && 
 				(KnockoutPlus.protectBlocks)) {
-			Material mat = e.getPlayer().getItemInHand().getType();
+			Material mat = e.getPlayer().getEquipment().getItemInMainHand().getType();
 			if ((mat == Material.WATER_BUCKET) || (mat == Material.LAVA_BUCKET) || (mat == Material.FLINT_AND_STEEL))
 			{
 				loc = e.getClickedBlock().getLocation();
@@ -353,9 +355,9 @@ implements Listener
 					}
 					, 40L);
 
-					Integer oldTaskId = chants.put(p.getUniqueId(), Integer.valueOf(taskId));
+					Integer oldTaskId = chants.put(p.getUniqueId(), taskId);
 					if (oldTaskId == null) break;
-					Bukkit.getScheduler().cancelTask(oldTaskId.intValue());
+					Bukkit.getScheduler().cancelTask(oldTaskId);
 
 					break; 
 				} if ((e.getAction() != Action.RIGHT_CLICK_BLOCK) && (e.getAction() != Action.RIGHT_CLICK_AIR)) {
@@ -376,7 +378,7 @@ implements Listener
 
 	private void interrupt(Player p) {
 		if (chants.containsKey(p.getUniqueId())) {
-			int taskId = chants.remove(p.getUniqueId()).intValue();
+			int taskId = chants.remove(p.getUniqueId());
 
 			Bukkit.getScheduler().cancelTask(taskId);
 			if (p.hasPotionEffect(PotionEffectType.SLOW_DIGGING))

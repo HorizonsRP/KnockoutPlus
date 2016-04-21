@@ -23,8 +23,8 @@ public class DamageApi
     }
 
     if (isBlockedByArmor(cause)) {
-      if (((target instanceof HumanEntity)) && 
-        (((HumanEntity)target).isBlocking()) && (dmg > 0.0F)) dmg = (1.0F + dmg) * 0.5F;
+      if (((target instanceof HumanEntity)) &&
+              (((HumanEntity)target).isBlocking()) && (dmg > 0.0F)) dmg = (1.0F + dmg) * 0.5F;
 
       int armorValue = 0;
       for (ItemStack arms : target.getEquipment().getArmorContents()) {
@@ -72,42 +72,42 @@ public class DamageApi
   private int getEnchantmentEPF(ItemStack is, EntityDamageEvent.DamageCause cause)
   {
     switch (cause) { case MAGIC:
-    case POISON:
-      return 0;
-    case ENTITY_EXPLOSION:
-    case FALL:
-    case FIRE:
-      if (is.containsEnchantment(Enchantment.PROTECTION_FIRE))
-        return getEPFFor(Enchantment.PROTECTION_FIRE, is.getEnchantmentLevel(Enchantment.PROTECTION_FIRE));
-      if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL))
-        return getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
-      return 0;
-    case CUSTOM:
-      if (is.containsEnchantment(Enchantment.PROTECTION_PROJECTILE))
-        return getEPFFor(Enchantment.PROTECTION_PROJECTILE, is.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE));
-      if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL))
-        return getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
-      return 0;
-    case LAVA:
-    case LIGHTNING:
-      if (is.containsEnchantment(Enchantment.PROTECTION_EXPLOSIONS))
-        return getEPFFor(Enchantment.PROTECTION_EXPLOSIONS, is.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS));
-      if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL))
-        return getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
-      return 0;
-    case ENTITY_ATTACK:
-      int val = 0;
-      if (is.containsEnchantment(Enchantment.PROTECTION_EXPLOSIONS))
-        val += getEPFFor(Enchantment.PROTECTION_EXPLOSIONS, is.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS));
-      if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL)) {
-        val += getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
-      }
-      return val;
-    case DROWNING:
-    case FALLING_BLOCK:
-    case FIRE_TICK:
-    case MELTING: } if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL))
-      return getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
+      case POISON:
+        return 0;
+      case ENTITY_EXPLOSION:
+      case FALL:
+      case FIRE:
+        if (is.containsEnchantment(Enchantment.PROTECTION_FIRE))
+          return getEPFFor(Enchantment.PROTECTION_FIRE, is.getEnchantmentLevel(Enchantment.PROTECTION_FIRE));
+        if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL))
+          return getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
+        return 0;
+      case CUSTOM:
+        if (is.containsEnchantment(Enchantment.PROTECTION_PROJECTILE))
+          return getEPFFor(Enchantment.PROTECTION_PROJECTILE, is.getEnchantmentLevel(Enchantment.PROTECTION_PROJECTILE));
+        if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL))
+          return getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
+        return 0;
+      case LAVA:
+      case LIGHTNING:
+        if (is.containsEnchantment(Enchantment.PROTECTION_EXPLOSIONS))
+          return getEPFFor(Enchantment.PROTECTION_EXPLOSIONS, is.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS));
+        if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL))
+          return getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
+        return 0;
+      case ENTITY_ATTACK:
+        int val = 0;
+        if (is.containsEnchantment(Enchantment.PROTECTION_EXPLOSIONS))
+          val += getEPFFor(Enchantment.PROTECTION_EXPLOSIONS, is.getEnchantmentLevel(Enchantment.PROTECTION_EXPLOSIONS));
+        if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL)) {
+          val += getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
+        }
+        return val;
+      case DROWNING:
+      case FALLING_BLOCK:
+      case FIRE_TICK:
+      case MELTING: } if (is.containsEnchantment(Enchantment.PROTECTION_ENVIRONMENTAL))
+    return getEPFFor(Enchantment.PROTECTION_ENVIRONMENTAL, is.getEnchantmentLevel(Enchantment.PROTECTION_ENVIRONMENTAL));
     return 0;
   }
 
@@ -128,41 +128,41 @@ public class DamageApi
 
   private boolean isBlockedByArmor(EntityDamageEvent.DamageCause cause) {
     switch (cause) { case BLOCK_EXPLOSION:
-    case CONTACT:
-    case CUSTOM:
-    case ENTITY_EXPLOSION:
-    case FIRE:
-    case LAVA:
-    case LIGHTNING:
-    case MELTING:
-    case THORNS:
-      return true;
-    case DROWNING:
-    case ENTITY_ATTACK:
-    case FALL:
-    case FALLING_BLOCK:
-    case FIRE_TICK:
-    case MAGIC:
-    case POISON:
-    case PROJECTILE:
-    case STARVATION:
-    case SUFFOCATION:
-    case SUICIDE: } return false;
+      case CONTACT:
+      case CUSTOM:
+      case ENTITY_EXPLOSION:
+      case FIRE:
+      case LAVA:
+      case LIGHTNING:
+      case MELTING:
+      case THORNS:
+        return true;
+      case DROWNING:
+      case ENTITY_ATTACK:
+      case FALL:
+      case FALLING_BLOCK:
+      case FIRE_TICK:
+      case MAGIC:
+      case POISON:
+      case PROJECTILE:
+      case STARVATION:
+      case SUFFOCATION:
+      case SUICIDE: } return false;
   }
 
   private int getArmorValue(ItemStack armor)
   {
     Material mat = armor.getType();
 
-    if ((mat == Material.LEATHER_HELMET) || (mat == Material.LEATHER_BOOTS) || 
-      (mat == Material.GOLD_BOOTS) || (mat == Material.CHAINMAIL_BOOTS))
+    if ((mat == Material.LEATHER_HELMET) || (mat == Material.LEATHER_BOOTS) ||
+            (mat == Material.GOLD_BOOTS) || (mat == Material.CHAINMAIL_BOOTS))
       return 1;
-    if ((mat == Material.LEATHER_LEGGINGS) || (mat == Material.GOLD_HELMET) || 
-      (mat == Material.CHAINMAIL_HELMET) || (mat == Material.IRON_HELMET) || 
-      (mat == Material.IRON_BOOTS))
+    if ((mat == Material.LEATHER_LEGGINGS) || (mat == Material.GOLD_HELMET) ||
+            (mat == Material.CHAINMAIL_HELMET) || (mat == Material.IRON_HELMET) ||
+            (mat == Material.IRON_BOOTS) || (mat == Material.ELYTRA))
       return 2;
-    if ((mat == Material.LEATHER_CHESTPLATE) || (mat == Material.GOLD_LEGGINGS) || 
-      (mat == Material.DIAMOND_BOOTS) || (mat == Material.DIAMOND_HELMET))
+    if ((mat == Material.LEATHER_CHESTPLATE) || (mat == Material.GOLD_LEGGINGS) ||
+            (mat == Material.DIAMOND_BOOTS) || (mat == Material.DIAMOND_HELMET))
       return 3;
     if (mat == Material.CHAINMAIL_LEGGINGS)
       return 4;

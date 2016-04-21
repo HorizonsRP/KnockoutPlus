@@ -13,16 +13,15 @@ import com.google.common.collect.Maps;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
-import net.minecraft.server.v1_8_R3.PacketPlayOutEntity;
+import net.minecraft.server.v1_9_R1.PacketPlayOutEntity;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
 import org.bukkit.entity.Creature;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -103,7 +102,7 @@ public final class KnockoutPlus extends JavaPlugin
 			public void onPacketSending(PacketEvent event)
 			{
 				PacketContainer packet = event.getPacket();
-				final int id = packet.getIntegers().read(0).intValue();
+				final int id = packet.getIntegers().read(0);
 				
 
 				for (final Corpse c : CorpseRegistry.getCorpses())
@@ -261,7 +260,7 @@ public final class KnockoutPlus extends JavaPlugin
 				return true;
 			}
 
-			player.getWorld().playSound(player.getLocation(), Sound.DIG_WOOL, 3.5F, -1.0F);
+			player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CLOTH_BREAK, 3.5F, -1.0F);
 			player.sendMessage(ChatColor.YELLOW + "You bend down to try and assist " + giveName(target));
 			player.sendMessage(String.valueOf(ChatColor.GRAY) + ChatColor.BOLD + "(Hold still or your action will be interrupted.)");
 			target.sendMessage(ChatColor.YELLOW + "You are being assisted by " + giveName(player));
@@ -283,7 +282,7 @@ public final class KnockoutPlus extends JavaPlugin
 							Bukkit.getPluginManager().callEvent(event);
 							if (event.isCancelled()) return;
 
-							player.getWorld().playSound(player.getLocation(), Sound.ZOMBIE_UNFECT, 1.2F, 1.0F);
+							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 1.2F, 1.0F);
 							player.sendMessage(ChatColor.GOLD + "You have saved " + KnockoutPlus.this.giveName(target) + ChatColor.GOLD + " from a grisly fate.");
 							target.sendMessage(ChatColor.GOLD + "You have been saved, but you still feel weak");
 							target.sendMessage(ChatColor.DARK_RED + "Caution: Being incapacitated again shall mean your demise.");
@@ -291,15 +290,15 @@ public final class KnockoutPlus extends JavaPlugin
 							KnockoutPlus.revivePlayer(target, 4.0D);
 							corpse.unregister();
 
-							KnockoutPlus.recentKos.put(target.getUniqueId(), Long.valueOf(System.currentTimeMillis()));
+							KnockoutPlus.recentKos.put(target.getUniqueId(), System.currentTimeMillis());
 						}
 				}
 			}
 			, 100L);
 
-			Integer oldTaskId = KOListener.chants.put(player.getUniqueId(), Integer.valueOf(taskId));
+			Integer oldTaskId = KOListener.chants.put(player.getUniqueId(), taskId);
 			if (oldTaskId != null) {
-				Bukkit.getScheduler().cancelTask(oldTaskId.intValue());
+				Bukkit.getScheduler().cancelTask(oldTaskId);
 			}
 			return true;
 		} else if (cmd.getName().equalsIgnoreCase("reviveall")) {
@@ -354,7 +353,7 @@ public final class KnockoutPlus extends JavaPlugin
 		UUID u = p.getUniqueId();
 		if (recentKos.containsKey(u)) {
 			long time = System.currentTimeMillis();
-			if (time < recentKos.get(u).longValue() + 600000L) return true;
+			if (time < recentKos.get(u) + 600000L) return true;
 		}
 
 		return false;
@@ -381,12 +380,8 @@ public final class KnockoutPlus extends JavaPlugin
 		k.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
 
 		KOListener.verdictDelay.add(k.getUniqueId());
-		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-			public void run() {
-				KOListener.verdictDelay.remove(k.getUniqueId());
-			}
-		}
-		, 50L);
+		Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> KOListener.verdictDelay.remove(k.getUniqueId())
+				, 50L);
 
 		if (mobsUntarget) stopTarget(p);
 		Location l = layPlayerDown(p);
@@ -395,11 +390,10 @@ public final class KnockoutPlus extends JavaPlugin
 	}
 
 	private void stopTarget(Player p) {
-		for (Entity e : p.getNearbyEntities(12.0D, 5.0D, 12.0D))
-			if ((e instanceof Creature)) {
-				Creature c = (Creature)e;
-				if (c.getTarget() == p) c.setTarget(null);
-			}
+		p.getNearbyEntities(12.0D, 5.0D, 12.0D).stream().filter(e -> (e instanceof Creature)).forEach(e -> {
+			Creature c = (Creature) e;
+			if (c.getTarget() == p) c.setTarget(null);
+		});
 	}
 
 	private Location layPlayerDown(final Player p)
@@ -477,7 +471,7 @@ public final class KnockoutPlus extends JavaPlugin
 		}
 		
 		PacketContainer packet = new PacketContainer(PacketType.Play.Server.BED);
-		packet.getIntegers().write(0, Integer.valueOf(p.getEntityId()));
+		packet.getIntegers().write(0, p.getEntityId());
 		packet.getBlockPositionModifier().write(0, new BlockPosition(l.getBlockX(), 0, l.getBlockZ()));
 		protocol.broadcastServerPacket(packet);
 		final PacketPlayOutEntity.PacketPlayOutRelEntityMove move = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(p.getEntityId(), (byte)0, (byte)(l.getBlockY()+1), (byte)0, false);
@@ -491,7 +485,7 @@ public final class KnockoutPlus extends JavaPlugin
 	static void wake(Player v, Location l, boolean updateblock)
 	{
 		PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
-		packet.getIntegers().write(0, Integer.valueOf(v.getEntityId())).write(1, Integer.valueOf(2));
+		packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
 		protocol.broadcastServerPacket(packet, v, true);
 		if (updateblock) {
 			for (Player t : v.getWorld().getPlayers()) {
@@ -504,7 +498,7 @@ public final class KnockoutPlus extends JavaPlugin
 	@SuppressWarnings("deprecation")
 	public static void wakeOne(Player v) {
 		PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
-		packet.getIntegers().write(0, Integer.valueOf(v.getEntityId())).write(1, Integer.valueOf(2));
+		packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
 		Location l = v.getLocation();
 		try {
 			v.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK, (byte)0);
