@@ -13,14 +13,14 @@ import com.google.common.collect.Maps;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
-import net.minecraft.server.v1_9_R1.PacketPlayOutEntity;
+import net.minecraft.server.v1_9_R2.PacketPlayOutEntity;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -36,15 +36,83 @@ import java.util.UUID;
 
 public final class KnockoutPlus extends JavaPlugin
 {
-	FileConfiguration config;
-	static boolean mobsUntarget;
 	public static int bleedoutTime;
+	static boolean mobsUntarget;
 	static boolean playersKO;
 	static boolean mobsKO;
 	static boolean nonMobsKO;
 	static boolean protectBlocks;
-	private static ProtocolManager protocol;
 	static Map<UUID, Long> recentKos = Maps.newHashMap();
+	private static ProtocolManager protocol;
+	FileConfiguration config;
+
+	@SuppressWarnings("deprecation")
+	public static void removePlayer(Player p) {
+		Corpse c = CorpseRegistry.getCorpse(p);
+		Location l = c.getLocation();
+		p.sendBlockChange(l, l.getBlock().getType(), l.getBlock().getData());
+	}
+
+	static boolean wasRecentlyKnockedOut(Player p) {
+		UUID u = p.getUniqueId();
+		if (recentKos.containsKey(u)) {
+			long time = System.currentTimeMillis();
+			if (time < recentKos.get(u) + 600000L) return true;
+		}
+
+		return false;
+	}
+
+	@SuppressWarnings("deprecation")
+	static void wake(Player v, Location l, boolean updateblock) {
+		PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
+		packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
+		protocol.broadcastServerPacket(packet, v, true);
+		if (updateblock) {
+			for (Player t : v.getWorld().getPlayers()) {
+				t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK, (byte) 0);
+			}
+		}
+
+	}
+
+	@SuppressWarnings("deprecation")
+	public static void wakeOne(Player v) {
+		PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
+		packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
+		Location l = v.getLocation();
+		try {
+			v.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK, (byte) 0);
+			protocol.sendServerPacket(v, packet);
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void revivePlayer(Player v, double hp) {
+		wake(v, v.getLocation(), true);
+		removePlayer(v);
+
+		v.setHealth(Math.min(v.getMaxHealth(), hp));
+		v.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 400, 5, true), true);
+		v.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 400, 1, true), true);
+
+		Location l = v.getLocation();
+
+		PacketContainer hearts = new PacketContainer(PacketType.Play.Server.WORLD_PARTICLES);
+		hearts.getParticles().write(0, Particle.HEART);
+		hearts.getIntegers().write(0, Integer.valueOf(10));
+		hearts.getFloat()
+				.write(0, Float.valueOf((float) l.getX()))
+				.write(1, Float.valueOf((float) l.getY()))
+				.write(2, Float.valueOf((float) l.getZ()))
+				.write(3, Float.valueOf(0.5F))
+				.write(4, Float.valueOf(0.5F))
+				.write(5, Float.valueOf(0.5F))
+				.write(6, Float.valueOf(4.0F));
+
+		protocol.broadcastServerPacket(hearts, v, true);
+	}
 
 	public void onEnable()
 	{
@@ -103,7 +171,7 @@ public final class KnockoutPlus extends JavaPlugin
 			{
 				PacketContainer packet = event.getPacket();
 				final int id = packet.getIntegers().read(0);
-				
+
 
 				for (final Corpse c : CorpseRegistry.getCorpses())
 					if (c.getEntityId() == id) {
@@ -340,25 +408,6 @@ public final class KnockoutPlus extends JavaPlugin
 		return false;
 	}
 
-	@SuppressWarnings("deprecation")
-	public static void removePlayer(Player p)
-	{
-		Corpse c = CorpseRegistry.getCorpse(p);
-		Location l = c.getLocation();
-		p.sendBlockChange(l, l.getBlock().getType(), l.getBlock().getData());
-	}
-
-	static boolean wasRecentlyKnockedOut(Player p)
-	{
-		UUID u = p.getUniqueId();
-		if (recentKos.containsKey(u)) {
-			long time = System.currentTimeMillis();
-			if (time < recentKos.get(u) + 600000L) return true;
-		}
-
-		return false;
-	}
-
 	void koPlayer(Player p)
 	{
 		p.sendMessage(ChatColor.RED + "You have been knocked out and will die if not aided!");
@@ -422,18 +471,18 @@ public final class KnockoutPlus extends JavaPlugin
 				l.add(0.0D, 0.0D, 1.0D);
 			}
 			else if (b.getRelative(BlockFace.WEST).isEmpty()) {
-				if ((b.getRelative(BlockFace.NORTH_WEST).isEmpty()) && 
+				if ((b.getRelative(BlockFace.NORTH_WEST).isEmpty()) &&
 						(!b.getRelative(-1, -1, -1).isEmpty()) && (!b.getRelative(-1, -1, 0).isEmpty()))
 					l.add(-1.0D, 0.0D, 0.0D);
-				else if ((b.getRelative(BlockFace.SOUTH_WEST).isEmpty()) && 
+				else if ((b.getRelative(BlockFace.SOUTH_WEST).isEmpty()) &&
 						(!b.getRelative(-1, -1, 0).isEmpty()) && (!b.getRelative(-1, -1, 1).isEmpty()))
 					l.add(-1.0D, 0.0D, 1.0D);
 			}
 			else if (b.getRelative(BlockFace.EAST).isEmpty()) {
-				if ((b.getRelative(BlockFace.NORTH_EAST).isEmpty()) && 
+				if ((b.getRelative(BlockFace.NORTH_EAST).isEmpty()) &&
 						(!b.getRelative(1, -1, -1).isEmpty()) && (!b.getRelative(1, -1, 0).isEmpty()))
 					l.add(1.0D, 0.0D, 0.0D);
-				else if ((b.getRelative(BlockFace.SOUTH_EAST).isEmpty()) && 
+				else if ((b.getRelative(BlockFace.SOUTH_EAST).isEmpty()) &&
 						(!b.getRelative(1, -1, 0).isEmpty()) && (!b.getRelative(1, -1, 1).isEmpty())) {
 					l.add(1.0D, 0.0D, 1.0D);
 				}
@@ -450,26 +499,26 @@ public final class KnockoutPlus extends JavaPlugin
 		} else {
 			p.sendBlockChange(l, Material.STEP, (byte)0);
 		}*/
-		
+
 		if (height > 4) {
 			p.teleport(l);
 		}
-		
+
 		final Location bl = l.add(0.0D, 1.0D, 0.0D);
 
-		
+
 		sendBedPacket(p,bl,p.getWorld().getPlayers());
-		
-		
+
+
 		return l;
 	}
-	
+
 	@SuppressWarnings("deprecation")
 	private void sendBedPacket(Player p, Location l, List<Player> targets) {
 		for (Player t : targets) {
 			t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BED_BLOCK, (byte) 0);
 		}
-		
+
 		PacketContainer packet = new PacketContainer(PacketType.Play.Server.BED);
 		packet.getIntegers().write(0, p.getEntityId());
 		packet.getBlockPositionModifier().write(0, new BlockPosition(l.getBlockX(), 0, l.getBlockZ()));
@@ -479,58 +528,6 @@ public final class KnockoutPlus extends JavaPlugin
 			if (p != t)
 			((CraftPlayer)t).getHandle().playerConnection.sendPacket(move);
 		}
-	}
-
-	@SuppressWarnings("deprecation")
-	static void wake(Player v, Location l, boolean updateblock)
-	{
-		PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
-		packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
-		protocol.broadcastServerPacket(packet, v, true);
-		if (updateblock) {
-			for (Player t : v.getWorld().getPlayers()) {
-				t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK, (byte)0);
-			}
-		}
-
-	}
-
-	@SuppressWarnings("deprecation")
-	public static void wakeOne(Player v) {
-		PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
-		packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
-		Location l = v.getLocation();
-		try {
-			v.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK, (byte)0);
-			protocol.sendServerPacket(v, packet); } catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
-	}
-
-	public static void revivePlayer(Player v, double hp)
-	{
-		wake(v, v.getLocation(), true);
-		removePlayer(v);
-
-		v.setHealth(Math.min(v.getMaxHealth(), hp));
-		v.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 400, 5, true), true);
-		v.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 400, 1, true), true);
-
-		Location l = v.getLocation();
-
-		PacketContainer hearts = new PacketContainer(PacketType.Play.Server.WORLD_PARTICLES);
-		hearts.getParticles().write(0, Particle.HEART);
-		hearts.getIntegers().write(0, Integer.valueOf(10));
-		hearts.getFloat()
-		.write(0, Float.valueOf((float)l.getX()))
-		.write(1, Float.valueOf((float)l.getY()))
-		.write(2, Float.valueOf((float)l.getZ()))
-		.write(3, Float.valueOf(0.5F))
-		.write(4, Float.valueOf(0.5F))
-		.write(5, Float.valueOf(0.5F))
-		.write(6, Float.valueOf(4.0F));
-
-		protocol.broadcastServerPacket(hearts, v, true);
 	}
 
 	String giveName(Player p)
