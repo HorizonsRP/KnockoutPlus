@@ -235,27 +235,7 @@ public final class KnockoutPlus extends JavaPlugin
 
 			return true;
 		}if (cmd.getName().equalsIgnoreCase("hunger")) {
-			if (!(sender instanceof Player))
-				return true;
-			if (args.length != 1) {
-				return false;
-			}
-			Player p = (Player)sender;
-			int slot;
-			try
-			{
-				slot = Math.abs(Integer.parseInt(args[0]));
-			}
-			catch (NumberFormatException e)
-			{
-				return false;
-			}
-			if (slot >= 20) {
-				p.setFoodLevel(0);
-			} else {
-				p.setFoodLevel(p.getFoodLevel()-slot);
-			}
-
+			sender.sendMessage(ChatColor.RED + "This has been removed due to potential abuse with the new food regeneration mechanic.");
 			return true;
 		}if (cmd.getName().equalsIgnoreCase("d20")) {
 			if (!(sender instanceof Player))
