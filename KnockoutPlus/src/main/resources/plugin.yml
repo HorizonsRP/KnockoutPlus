@@ -2,7 +2,7 @@ name: Knockout Plus
 main: io.github.archemedes.knockoutplus.KnockoutPlus
 description: This plugin puts the 'cute' back in execute. Fight to the death or friendly brawl? The choice is yours. 
 version: ${project.version}
-depend: [ProtocolLib]
+depend: [ProtocolLib, WorldGuard, WGCustomFlags]
 authors: [Arche, Kowaman]
 
 commands:
@@ -30,4 +30,5 @@ commands:
      aliases: [d40, d48]
    togglerevive:
       description: This command lets you assist a knocked out character.
+      permission: archecore.mod
       usage: /togglerevive [mobs/environment/players]     
