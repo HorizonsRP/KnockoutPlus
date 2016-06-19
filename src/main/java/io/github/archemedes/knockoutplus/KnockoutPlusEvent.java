@@ -7,8 +7,8 @@ import org.bukkit.event.player.PlayerEvent;
 public abstract class KnockoutPlusEvent extends PlayerEvent
   implements Cancellable
 {
-  private boolean cancel = false;
   private final Player target;
+  private boolean cancel = false;
 
   protected KnockoutPlusEvent(Player player, Player target)
   {

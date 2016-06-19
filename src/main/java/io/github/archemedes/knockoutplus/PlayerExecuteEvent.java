@@ -7,17 +7,16 @@ public class PlayerExecuteEvent extends KnockoutPlusEvent
 {
   private static final HandlerList handlers = new HandlerList();
 
-  public HandlerList getHandlers() {
-    return handlers;
+  public PlayerExecuteEvent(Player player, Player target) {
+    super(player, target);
   }
 
   public static HandlerList getHandlerList() {
     return handlers;
   }
 
-  public PlayerExecuteEvent(Player player, Player target)
-  {
-    super(player, target);
+  public HandlerList getHandlers() {
+    return handlers;
   }
 }
 
