@@ -394,10 +394,10 @@ public class KOListener
                 killMsg = ChatColor.GOLD + "Justice has been brought down upon " + v.getDisplayName() + ChatColor.GOLD + " this day.";
                 break;
             case 3:
-                killMsg = ChatColor.GOLD + "The ground runs red with the blood of " + v.getDisplayName() + ChatColor.GOLD + ".";
+                killMsg = ChatColor.GOLD + "The ground runs red with the blood of " + v.getDisplayName() + ChatColor.GOLD + "";
                 break;
             case 4:
-                killMsg = ChatColor.GOLD + "It's all over for " + v.getDisplayName() + ChatColor.GOLD + ".";
+                killMsg = ChatColor.GOLD + "It's all over for " + v.getDisplayName() + ChatColor.GOLD + "";
                 break;
             case 5:
                 killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + " will question your might no longer.";

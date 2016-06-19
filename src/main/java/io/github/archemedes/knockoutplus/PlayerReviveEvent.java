@@ -8,18 +8,17 @@ public class PlayerReviveEvent extends KnockoutPlusEvent
 	private static final HandlerList handlers = new HandlerList();
 	private final Reason reason;
 
-	public HandlerList getHandlers()
-	{
-		return handlers;
+	public PlayerReviveEvent(Player player, Player target, Reason reason) {
+		super(player, target);
+		this.reason = reason;
 	}
 
 	public static HandlerList getHandlerList() {
 		return handlers;
 	}
 
-	public PlayerReviveEvent(Player player, Player target, Reason reason) {
-		super(player, target);
-		this.reason = reason;
+	public HandlerList getHandlers() {
+		return handlers;
 	}
 
 	public Reason getReason() {

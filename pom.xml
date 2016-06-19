@@ -12,15 +12,9 @@
     </properties>
     <distributionManagement>
         <repository>
-            <id>lotc</id>
-            <name>Release Repository</name>
-            <url>https://repo.lordofthecraft.net/repository/LotC/</url>
+            <id>lotc-release</id>
+            <url>https://repo.lordofthecraft.net/repository/lotc-releases/</url>
         </repository>
-        <snapshotRepository>
-            <id>lotc-snapshots</id>
-            <name>Snapshot Repository</name>
-            <url>https://repo.lordofthecraft.net/repository/LotC-Snapshot/</url>
-        </snapshotRepository>
     </distributionManagement>
     <dependencies>
         <dependency>
@@ -86,28 +80,6 @@
     </build>
     <repositories>
         <repository>
-            <id>lotc</id>
-            <name>Lord of the Craft Releases</name>
-            <url>https://repo.lordofthecraft.net/repository/LotC/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>lotc-snapshot</id>
-            <name>LotC Snapshots</name>
-            <url>https://repo.lordofthecraft.net/repository/LotC-Snapshot/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
@@ -119,29 +91,12 @@
             <id>sk89q-repo</id>
             <url>https://maven.sk89q.com/repo/</url>
         </repository>
+        <repository>
+            <id>lotc-release</id>
+            <url>https://repo.lordofthecraft.net/repository/lotc-releases/</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <id>lotc</id>
-            <name>Lord of the Craft Releases</name>
-            <url>https://repo.lordofthecraft.net/repository/LotC/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>lotc-snapshot</id>
-            <name>LotC Snapshots</name>
-            <url>https://repo.lordofthecraft.net/repository/LotC-Snapshot/</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 </project>

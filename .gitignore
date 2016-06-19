@@ -1,5 +1,5 @@
 ### Java template
-*.class
+target/classes/io/github/archemedes/knockoutplus/corpse/CorpseRegistry.class
 /.idea
 
 # Mobile Tools for Java (J2ME)
