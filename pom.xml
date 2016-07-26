@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.archemedes</groupId>
     <artifactId>knockoutplus</artifactId>
-    <version>1.94</version>
+    <version>1.102.0</version>
     <name>KnockoutPlus</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -20,13 +20,13 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
-            <version>1.9.4-R0.1-SNAPSHOT</version>
+            <version>1.10.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.9.4-R0.1-SNAPSHOT</version>
+            <version>1.10.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -38,7 +38,7 @@
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
             <artifactId>ProtocolLib</artifactId>
-            <version>4.0.0-SNAPSHOT</version>
+            <version>4.0.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.mewin</groupId>
@@ -48,9 +48,9 @@
             <systemPath>${project.basedir}/lib/WGCustomFlags.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>com.sk89q</groupId>
-            <artifactId>worldguard</artifactId>
-            <version>6.1.1-SNAPSHOT</version>
+            <groupId>com.sk89q.worldguard</groupId>
+            <artifactId>worldguard-legacy</artifactId>
+            <version>6.1.3-20160705.232357-6</version>
         </dependency>
     </dependencies>
     <build>
