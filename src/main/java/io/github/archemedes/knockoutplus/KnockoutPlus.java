@@ -237,11 +237,25 @@ public final class KnockoutPlus extends JavaPlugin {
                 return false;
             }
             if (slot > 5) {
-                EntityDamageEvent event = new EntityDamageEvent(p, EntityDamageEvent.DamageCause.SUICIDE, slot);
-                Bukkit.getPluginManager().callEvent(event);
-                p.damage(event.getDamage());
+                if(slot >= p.getHealth()){
+                    EntityDamageEvent event = new EntityDamageEvent(p, EntityDamageEvent.DamageCause.SUICIDE, slot);
+                    Bukkit.getPluginManager().callEvent(event);
+                    p.damage(event.getDamage());
+                }else{
+                    EntityDamageEvent event = new EntityDamageEvent(p, EntityDamageEvent.DamageCause.CUSTOM, slot);
+                    Bukkit.getPluginManager().callEvent(event);
+                    p.damage(event.getDamage());
+                }
             } else {
-                if (p.getGameMode() == GameMode.SURVIVAL) p.setHealth(p.getHealth() - slot);
+                if (p.getGameMode() == GameMode.SURVIVAL){
+                    if(slot >= p.getHealth()){
+                        EntityDamageEvent event = new EntityDamageEvent(p, EntityDamageEvent.DamageCause.SUICIDE, slot);
+                        Bukkit.getPluginManager().callEvent(event);
+                        p.damage(event.getDamage());
+                    }else{
+                        p.setHealth(p.getHealth() - slot);
+                    }
+                }
                 else {
                     p.sendMessage("You have to be in survival to do this.");
                     return true;
