@@ -121,13 +121,9 @@ public class KOListener
 
         if ((e.getCause() == EntityDamageEvent.DamageCause.SUICIDE) || (e.getCause() == EntityDamageEvent.DamageCause.VOID)) {
             Corpse c = CorpseRegistry.register(p,p.getLocation());
-            Bukkit.broadcastMessage("created corpse");
-            Bukkit.broadcastMessage("" + e.getDamage());
-            Bukkit.broadcastMessage("" + p.getHealth());
             if ((c != null) &&
                     (e.getDamage() >= p.getHealth())) {
                 c.unregister();
-                Bukkit.broadcastMessage("ran");
                 p.damage(1.0D);
                 KnockoutPlus.wakeOne(p);
                 p.setHealth(0.0D);
