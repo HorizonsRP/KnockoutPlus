@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.archemedes</groupId>
     <artifactId>knockoutplus</artifactId>
-    <version>1.102.0</version>
+    <version>1.102.1</version>
     <name>KnockoutPlus</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
