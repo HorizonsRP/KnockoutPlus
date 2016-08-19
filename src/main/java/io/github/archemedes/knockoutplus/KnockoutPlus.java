@@ -170,12 +170,12 @@ public final class KnockoutPlus extends JavaPlugin {
 			}
 		});*/
 
-        customFlags = getWGCustomFlags();
+        /*customFlags = getWGCustomFlags();
         if (customFlags != null) {
             customFlags.addCustomFlag(PLAYER_KO);
             customFlags.addCustomFlag(MOB_KO);
             customFlags.addCustomFlag(OTHER_KO);
-        }
+        }*/
 
         protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
             public void onPacketSending(PacketEvent event) {
