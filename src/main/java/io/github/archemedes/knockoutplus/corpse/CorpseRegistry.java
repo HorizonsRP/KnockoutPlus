@@ -4,7 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import io.github.archemedes.knockoutplus.KOListener;
 import io.github.archemedes.knockoutplus.KnockoutPlus;
-import io.github.archemedes.knockoutplus.PlayerReviveEvent;
+import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

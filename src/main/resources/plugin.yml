@@ -18,11 +18,6 @@ commands:
      permission: knockoutplus.revive
      aliases: [d]
      usage: /damage [damage amount]
-   hunger:
-     description: This command causes you to lose hunger
-     permission: knockoutplus.revive
-     aliases: [hu]
-     usage: /hunger [hunger amount]
    d20:
      description: Instant ko-worthy damage
      permission: knockoutplus.revive

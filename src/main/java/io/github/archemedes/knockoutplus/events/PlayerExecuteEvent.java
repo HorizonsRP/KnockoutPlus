@@ -1,4 +1,4 @@
-package io.github.archemedes.knockoutplus;
+package io.github.archemedes.knockoutplus.events;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -19,8 +19,3 @@ public class PlayerExecuteEvent extends KnockoutPlusEvent
     return handlers;
   }
 }
-
-/* Location:           C:\Users\Nick\Desktop\Minecraft\LOTC\LeadDev\plugins\KnockoutPlus.jar
- * Qualified Name:     io.github.archemedes.knockoutplus.PlayerExecuteEvent
- * JD-Core Version:    0.6.2
- */

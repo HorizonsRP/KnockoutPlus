@@ -9,6 +9,8 @@ import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
+import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
+import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;

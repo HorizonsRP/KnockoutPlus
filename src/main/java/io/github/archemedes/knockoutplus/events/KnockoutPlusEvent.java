@@ -1,4 +1,4 @@
-package io.github.archemedes.knockoutplus;
+package io.github.archemedes.knockoutplus.events;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -27,8 +27,3 @@ public abstract class KnockoutPlusEvent extends PlayerEvent
     this.cancel = cancel;
   }
 }
-
-/* Location:           C:\Users\Nick\Desktop\Minecraft\LOTC\LeadDev\plugins\KnockoutPlus.jar
- * Qualified Name:     io.github.archemedes.knockoutplus.KnockoutPlusEvent
- * JD-Core Version:    0.6.2
- */
