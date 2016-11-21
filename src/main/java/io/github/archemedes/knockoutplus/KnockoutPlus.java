@@ -49,7 +49,6 @@ public final class KnockoutPlus extends JavaPlugin {
     static boolean protectBlocks;
     static Map<UUID, Long> recentKos = Maps.newHashMap();
     private static ProtocolManager protocol;
-    private static WGCustomFlagsPlugin customFlags;
     FileConfiguration config;
 
     @SuppressWarnings("deprecation")
