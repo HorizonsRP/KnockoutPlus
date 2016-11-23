@@ -8,7 +8,6 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
-import com.sk89q.worldguard.protection.flags.StateFlag;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
@@ -20,7 +19,6 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Player;
@@ -28,7 +26,10 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import org.inventivetalent.apihelper.APIManager;
+import org.inventivetalent.regionapi.RegionAPI;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -38,22 +39,75 @@ import java.util.UUID;
 
 @Getter
 public final class KnockoutPlus extends JavaPlugin {
-    public final StateFlag PLAYER_KO = new StateFlag("player-knockout", true);
-    public final StateFlag MOB_KO = new StateFlag("mob-knockout", true);
-    public final StateFlag OTHER_KO = new StateFlag("environment-knockout", true);
     public int bleedoutTime;
-    private boolean mobsUntarget;
-    private boolean playersKO;
-    private boolean mobsKO;
-    private boolean nonMobsKO;
-    private boolean protectBlocks;
+    public boolean mobsUntarget;
+    public boolean playersKO;
+    public boolean mobsKO;
+    public boolean nonMobsKO;
+    public boolean protectBlocks;
     private Map<UUID, Long> recentKos = new HashMap<>();
     private ProtocolManager protocol;
-    private FileConfiguration config;
+
+    private FlagInjector flagInjector;
+    private CorpseRegistry corpseRegistry;
+    private KOListener koListener;
+    private BukkitTask bleedoutTask;
+
+    public void onEnable() {
+        APIManager.initAPI(RegionAPI.class);
+        corpseRegistry = new CorpseRegistry(this);
+        koListener = new KOListener(this);
+        saveDefaultConfig();
+
+        Bukkit.getPluginManager().registerEvents(flagInjector = new FlagInjector(), this);
+        bleedoutTask = new BleedoutTimer(this).runTaskTimer(this, 0L, 133L);
+
+        bleedoutTime = getConfig().getInt("bleedout.time");
+        mobsUntarget = getConfig().getBoolean("mobs.untarget.knockout");
+        playersKO = getConfig().getBoolean("players.cause.knockout");
+        mobsKO = getConfig().getBoolean("mobs.cause.knockout");
+        nonMobsKO = getConfig().getBoolean("nonmobs.cause.knockout");
+        protectBlocks = getConfig().getBoolean("protect.ko.blocks");
+
+        protocol = ProtocolLibrary.getProtocolManager();
+
+        protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
+            public void onPacketSending(PacketEvent event) {
+                PacketContainer packet = event.getPacket();
+                final int id = packet.getIntegers().read(0);
+
+
+                for (final Corpse c : corpseRegistry.getCorpses())
+                    if (c.getEntityId() == id) {
+                        final List<Player> t = Lists.newArrayList(event.getPlayer());
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
+                                    Location l = c.getLocation().add(0, 1, 0);
+                                    sendBedPacket(getServer().getPlayer(c.getVictim()), l, t);
+                                }
+                                , 2L);
+
+                        break;
+                    }
+            }
+        });
+    }
+
+    public void onDisable() {
+        for (Corpse c : corpseRegistry.getCorpses()) {
+            Player p = koListener.getPlayer(c.getVictim());
+            p.sendMessage(ChatColor.RED + "An evil entity has condemned you.");
+            wake(p, null, false);
+            removePlayer(p);
+            p.damage(1.0D);
+            p.setHealth(0.0D);
+        }
+        bleedoutTask.cancel();
+    }
+
 
     @SuppressWarnings("deprecation")
     public void removePlayer(Player p) {
-        Corpse c = CorpseRegistry.getCorpse(p);
+        Corpse c = corpseRegistry.getCorpse(p);
         Location l = c.getLocation();
         p.sendBlockChange(l, l.getBlock().getType(), l.getBlock().getData());
     }
@@ -69,11 +123,11 @@ public final class KnockoutPlus extends JavaPlugin {
     }
 
     @SuppressWarnings("deprecation")
-    void wake(Player v, Location l, boolean updateblock) {
+    void wake(Player v, Location l, boolean updateBlock) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
         packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
         protocol.broadcastServerPacket(packet, v, true);
-        if (updateblock) {
+        if (updateBlock) {
             for (Player t : v.getWorld().getPlayers()) {
                 t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK, (byte) 0);
             }
@@ -107,54 +161,6 @@ public final class KnockoutPlus extends JavaPlugin {
         player.getWorld().spawnParticle(org.bukkit.Particle.HEART, player.getLocation(), 1);
     }
 
-    public void onEnable() {
-        new KOListener(this);
-        this.config = getConfig();
-        saveDefaultConfig();
-
-        new BleedoutTimer(this).runTaskTimer(this, 0L, 133L);
-
-        bleedoutTime = this.config.getInt("bleedout.time");
-        mobsUntarget = this.config.getBoolean("mobs.untarget.knockout");
-        playersKO = this.config.getBoolean("players.cause.knockout");
-        mobsKO = this.config.getBoolean("mobs.cause.knockout");
-        nonMobsKO = this.config.getBoolean("nonmobs.cause.knockout");
-        protectBlocks = this.config.getBoolean("protect.ko.blocks");
-
-        protocol = ProtocolLibrary.getProtocolManager();
-
-        protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
-            public void onPacketSending(PacketEvent event) {
-                PacketContainer packet = event.getPacket();
-                final int id = packet.getIntegers().read(0);
-
-
-                for (final Corpse c : CorpseRegistry.getCorpses())
-                    if (c.getEntityId() == id) {
-                        final List<Player> t = Lists.newArrayList(event.getPlayer());
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
-                            Location l = c.getLocation().add(0, 1, 0);
-                            sendBedPacket(getServer().getPlayer(c.getVictim()), l, t);
-                        }
-                                , 2L);
-
-                        break;
-                    }
-            }
-        });
-    }
-
-    public void onDisable() {
-        for (Corpse c : CorpseRegistry.getCorpses()) {
-            Player p = KOListener.getPlayer(c.getVictim());
-            p.sendMessage(ChatColor.RED + "An evil entity has condemned you.");
-            wake(p, null, false);
-            removePlayer(p);
-            p.damage(1.0D);
-            p.setHealth(0.0D);
-        }
-    }
-
     @SuppressWarnings("deprecation")
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("damage")) {
@@ -171,26 +177,25 @@ public final class KnockoutPlus extends JavaPlugin {
                 return false;
             }
             if (slot > 5) {
-                if(slot >= p.getHealth()){
+                if (slot >= p.getHealth()) {
                     EntityDamageEvent event = new EntityDamageEvent(p, EntityDamageEvent.DamageCause.SUICIDE, slot);
                     Bukkit.getPluginManager().callEvent(event);
                     p.damage(event.getDamage());
-                }else{
+                } else {
                     EntityDamageEvent event = new EntityDamageEvent(p, EntityDamageEvent.DamageCause.CUSTOM, slot);
                     Bukkit.getPluginManager().callEvent(event);
                     p.damage(event.getDamage());
                 }
             } else {
-                if (p.getGameMode() == GameMode.SURVIVAL){
-                    if(slot >= p.getHealth()){
+                if (p.getGameMode() == GameMode.SURVIVAL) {
+                    if (slot >= p.getHealth()) {
                         EntityDamageEvent event = new EntityDamageEvent(p, EntityDamageEvent.DamageCause.SUICIDE, slot);
                         Bukkit.getPluginManager().callEvent(event);
                         p.damage(event.getDamage());
-                    }else{
+                    } else {
                         p.setHealth(p.getHealth() - slot);
                     }
-                }
-                else {
+                } else {
                     p.sendMessage("You have to be in survival to do this.");
                     return true;
                 }
@@ -222,14 +227,14 @@ public final class KnockoutPlus extends JavaPlugin {
                 return false;
             }
 
-            if (!CorpseRegistry.isKnockedOut(target)) {
+            if (!corpseRegistry.isKnockedOut(target)) {
                 sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped.");
                 return true;
             }
 
 
-            final Corpse corpse = CorpseRegistry.getCorpse(target);
-            Player killer = KOListener.getPlayer(corpse.getKiller());
+            final Corpse corpse = corpseRegistry.getCorpse(target);
+            Player killer = koListener.getPlayer(corpse.getKiller());
             if (!(sender instanceof Player) || (Lists.newArrayList(args).contains("gm") && sender.hasPermission("archecore.mod"))) {
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
@@ -242,7 +247,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
             player = (Player) sender;
 
-            if (CorpseRegistry.isKnockedOut(player)) {
+            if (corpseRegistry.isKnockedOut(player)) {
                 sender.sendMessage(ChatColor.RED + "You are knocked out!");
                 return true;
             }
@@ -278,37 +283,37 @@ public final class KnockoutPlus extends JavaPlugin {
             final Location chantSpot = player.getLocation();
 
             int taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
-                KOListener.chants.remove(player.getUniqueId());
-                if (!CorpseRegistry.isKnockedOut(target)) return;
+                        koListener.chants.remove(player.getUniqueId());
+                        if (!corpseRegistry.isKnockedOut(target)) return;
 
-                if (player.getLocation().getWorld() == chantSpot.getWorld())
-                    if (player.getLocation().distance(chantSpot) > 0.2D) {
-                        player.sendMessage(ChatColor.RED + "You have been interrupted!");
-                    } else {
-                        PlayerReviveEvent event = new PlayerReviveEvent(player, target, PlayerReviveEvent.Reason.COMMAND_REVIVE);
-                        Bukkit.getPluginManager().callEvent(event);
-                        if (event.isCancelled()) return;
+                        if (player.getLocation().getWorld() == chantSpot.getWorld())
+                            if (player.getLocation().distance(chantSpot) > 0.2D) {
+                                player.sendMessage(ChatColor.RED + "You have been interrupted!");
+                            } else {
+                                PlayerReviveEvent event = new PlayerReviveEvent(player, target, PlayerReviveEvent.Reason.COMMAND_REVIVE);
+                                Bukkit.getPluginManager().callEvent(event);
+                                if (event.isCancelled()) return;
 
-                        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 1.2F, 1.0F);
-                        player.sendMessage(ChatColor.GOLD + "You have saved " + giveName(target) + ChatColor.GOLD + " from a grisly fate.");
-                        target.sendMessage(ChatColor.GOLD + "You have been saved, but you still feel weak");
-                        target.sendMessage(ChatColor.DARK_RED + "Caution: Being incapacitated again shall mean your demise.");
+                                player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 1.2F, 1.0F);
+                                player.sendMessage(ChatColor.GOLD + "You have saved " + giveName(target) + ChatColor.GOLD + " from a grisly fate.");
+                                target.sendMessage(ChatColor.GOLD + "You have been saved, but you still feel weak");
+                                target.sendMessage(ChatColor.DARK_RED + "Caution: Being incapacitated again shall mean your demise.");
 
-                        revivePlayer(target, 4.0D);
-                        corpse.unregister();
+                                revivePlayer(target, 4.0D);
+                                corpse.unregister();
 
-                        recentKos.put(target.getUniqueId(), System.currentTimeMillis());
+                                recentKos.put(target.getUniqueId(), System.currentTimeMillis());
+                            }
                     }
-            }
                     , 100L);
 
-            Integer oldTaskId = KOListener.chants.put(player.getUniqueId(), taskId);
+            Integer oldTaskId = koListener.chants.put(player.getUniqueId(), taskId);
             if (oldTaskId != null) {
                 Bukkit.getScheduler().cancelTask(oldTaskId);
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("reviveall")) {
-            if ((sender.hasPermission("nexus.moderator")) || (!(sender instanceof Player))) CorpseRegistry.reviveAll();
+            if ((sender.hasPermission("nexus.moderator")) || (!(sender instanceof Player))) corpseRegistry.reviveAll();
             else
                 sender.sendMessage(ChatColor.RED + "You do not have permission to use this!");
             return true;
@@ -338,7 +343,7 @@ public final class KnockoutPlus extends JavaPlugin {
                 } else if (args[0].equalsIgnoreCase("list")) {
                     String gr = ChatColor.GRAY + "";
                     String it = ChatColor.ITALIC + "";
-                    for (Corpse c : CorpseRegistry.getCorpses()) {
+                    for (Corpse c : corpseRegistry.getCorpses()) {
                         sender.sendMessage(gr + it + c.getVictim() + gr + " killed by " + it + c.getKiller() + gr + " at " + it + c.getLocation());
                     }
 
@@ -358,7 +363,7 @@ public final class KnockoutPlus extends JavaPlugin {
             p.setFoodLevel(3);
         }
         Location l = layPlayerDown(p);
-        CorpseRegistry.register(p, l);
+        corpseRegistry.register(p, l);
         if (mobsUntarget) stopTarget(p);
     }
 
@@ -368,14 +373,14 @@ public final class KnockoutPlus extends JavaPlugin {
         k.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
         k.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
 
-        KOListener.verdictDelay.add(k.getUniqueId());
-        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> KOListener.verdictDelay.remove(k.getUniqueId())
+        koListener.verdictDelay.add(k.getUniqueId());
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> koListener.verdictDelay.remove(k.getUniqueId())
                 , 50L);
 
         if (mobsUntarget) stopTarget(p);
         Location l = layPlayerDown(p);
 
-        CorpseRegistry.register(p, k, l);
+        corpseRegistry.register(p, k, l);
     }
 
     private void stopTarget(Player p) {
@@ -427,15 +432,6 @@ public final class KnockoutPlus extends JavaPlugin {
             }
 
         }
-
-		/*final Material m = l.getBlock().getType();
-
-		if ((m == Material.FLOWER_POT) || (m == Material.SKULL) || (m == Material.STEP) || ((m == Material.SNOW) && (l.getBlock().getData() >= 2))) {
-			p.sendBlockChange(l, Material.GLASS, (byte)0);
-			l.add(0.0D, 1.0D, 0.0D);
-		} else {
-			p.sendBlockChange(l, Material.STEP, (byte)0);
-		}*/
 
         if (height > 4) {
             p.teleport(l);

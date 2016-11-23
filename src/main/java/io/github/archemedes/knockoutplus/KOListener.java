@@ -1,14 +1,12 @@
 package io.github.archemedes.knockoutplus;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.RegionContainer;
 import com.sk89q.worldguard.bukkit.RegionQuery;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
-import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
 import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import org.bukkit.*;
@@ -26,7 +24,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -35,19 +32,18 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
 
-public class KOListener
-        implements Listener {
-    static ArrayList<UUID> verdictDelay = Lists.newArrayList();
-    static HashMap<UUID, Integer> chants = Maps.newHashMap();
+public class KOListener implements Listener {
+    ArrayList<UUID> verdictDelay = new ArrayList<>();
+    HashMap<UUID, Integer> chants = new HashMap<>();
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
-    KOListener(Plugin plugin) {
+    KOListener(KnockoutPlus plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        this.plugin = ((KnockoutPlus) plugin);
+        this.plugin = plugin;
     }
 
-    public static Player getPlayer(UUID uuid) {
+    public Player getPlayer(UUID uuid) {
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.getUniqueId().equals(uuid)) {
                 return p;
@@ -62,7 +58,7 @@ public class KOListener
 
         interrupt(p);
 
-        if (CorpseRegistry.isKnockedOut(p)) {
+        if (plugin.getCorpseRegistry().isKnockedOut(p)) {
             String msg = e.getMessage();
             if ((!p.isOp()) &&
                     (!msg.startsWith("/tell ")) && (!msg.startsWith("/damage ")) && (!msg.startsWith("/modreq ")) && (!msg.startsWith("/check ")) &&
@@ -77,17 +73,17 @@ public class KOListener
     public void onTarget(EntityTargetLivingEntityEvent e) {
         if ((e.getTarget() instanceof Player)) {
             Player p = (Player) e.getTarget();
-            if ((CorpseRegistry.isKnockedOut(p)) && (KnockoutPlus.mobsUntarget))
+            if (plugin.getCorpseRegistry().isKnockedOut(p) && (plugin.isMobsUntarget()))
                 e.setCancelled(true);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
-        if (!KnockoutPlus.protectBlocks) return;
+        if (!plugin.isProtectBlocks()) return;
         Location loc = e.getBlock().getLocation();
 
-        for (Corpse c : CorpseRegistry.getCorpses()) {
+        for (Corpse c : plugin.getCorpseRegistry().getCorpses()) {
             Location l = c.getLocation();
             if ((l.getWorld().equals(loc.getWorld())) &&
                     (l.distance(loc) <= 2.0D)) {
@@ -100,10 +96,10 @@ public class KOListener
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockPlaceEvent e) {
-        if (!KnockoutPlus.protectBlocks) return;
+        if (!plugin.isProtectBlocks()) return;
         Location loc = e.getBlock().getLocation();
 
-        for (Corpse c : CorpseRegistry.getCorpses()) {
+        for (Corpse c : plugin.getCorpseRegistry().getCorpses()) {
             Location l = c.getLocation();
             if ((l.getWorld().equals(loc.getWorld())) &&
                     (l.distance(loc) <= 2.0D)) {
@@ -122,25 +118,25 @@ public class KOListener
         if (p.getGameMode() == GameMode.CREATIVE) return;
 
         if ((e.getCause() == EntityDamageEvent.DamageCause.SUICIDE) || (e.getCause() == EntityDamageEvent.DamageCause.VOID)) {
-            Corpse c = CorpseRegistry.register(p,p.getLocation());
+            Corpse c = plugin.getCorpseRegistry().register(p,p.getLocation());
             if ((c != null) &&
                     (e.getDamage() >= p.getHealth())) {
                 c.unregister();
                 p.damage(1.0D);
-                KnockoutPlus.wakeOne(p);
+                plugin.wakeOne(p);
                 p.setHealth(0.0D);
             }
 
             return;
         }
 
-        if (CorpseRegistry.isKnockedOut(p)) {
+        if (plugin.getCorpseRegistry().isKnockedOut(p)) {
             e.setCancelled(true);
             return;
         }
 
-        if (KnockoutPlus.wasRecentlyKnockedOut(p)) return;
-        if (!KnockoutPlus.nonMobsKO && !getSet(p.getLocation()).testState(WGBukkit.getPlugin().wrapPlayer(p), KnockoutPlus.OTHER_KO))
+        if (plugin.wasRecentlyKnockedOut(p)) return;
+        if (!plugin.isNonMobsKO() && !getSet(p.getLocation()).testState(WGBukkit.getPlugin().wrapPlayer(p), plugin.getFlagInjector().getOTHER_KO()))
             return;
 
         if ((e.getCause() == EntityDamageEvent.DamageCause.LAVA) || (e.getCause() == EntityDamageEvent.DamageCause.WITHER)) {
@@ -166,11 +162,11 @@ public class KOListener
     @EventHandler
     public void onPlayerLog(PlayerQuitEvent e) {
         Player p = e.getPlayer();
-        Corpse c = CorpseRegistry.getCorpse(p);
+        Corpse c = plugin.getCorpseRegistry().getCorpse(p);
         chants.remove(p.getUniqueId());
 
         if (c != null) {
-            KnockoutPlus.removePlayer(p);
+            plugin.removePlayer(p);
             c.unregister();
             p.setHealth(0.0D);
         }
@@ -181,12 +177,12 @@ public class KOListener
         if (!(e.getEntity() instanceof Player)) return;
         Player p = (Player) e.getEntity();
         if (p.getGameMode() == GameMode.CREATIVE) return;
-        if (CorpseRegistry.isKnockedOut(p)) {
+        if (plugin.getCorpseRegistry().isKnockedOut(p)) {
             e.setCancelled(true);
             return;
         }
 
-        if (KnockoutPlus.wasRecentlyKnockedOut(p)) return;
+        if (plugin.wasRecentlyKnockedOut(p)) return;
         if (e.getFinalDamage() < p.getHealth()) {
             return;
         }
@@ -196,27 +192,15 @@ public class KOListener
         ApplicableRegionSet set = getSet(p.getLocation());
         LocalPlayer lp = WGBukkit.getPlugin().wrapPlayer(p);
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
-            if (KnockoutPlus.playersKO && set.testState(lp, KnockoutPlus.PLAYER_KO)) {
+            if (plugin.playersKO && set.testState(lp, plugin.getFlagInjector().getPLAYER_KO())) {
                 Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
             }
             return;
         }
-        /*if ((killer instanceof Projectile)) {
-            Projectile proj = (Projectile)killer;
-			ProjectileSource shooter = proj.getShooter();
-			if ((shooter instanceof Player)) {
-				if (KnockoutPlus.playersKO) {
-					Player k = (Player)shooter;
-					this.plugin.koPlayer(p, k);
-					e.setCancelled(true);
-				}
-				return;
-			}
-		}*/
 
-        if (KnockoutPlus.mobsKO && set.testState(lp, KnockoutPlus.MOB_KO)) {
+        if (plugin.mobsKO && set.testState(lp, plugin.getFlagInjector().getMOB_KO())) {
             e.setCancelled(true);
             this.plugin.koPlayer(p);
         }
@@ -225,11 +209,11 @@ public class KOListener
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player p = event.getEntity();
-        KnockoutPlus.wakeOne(p);
-        KnockoutPlus.recentKos.remove(event.getEntity().getUniqueId());
+        plugin.wakeOne(p);
+        plugin.getRecentKos().remove(event.getEntity().getUniqueId());
         event.setDeathMessage(null);
 
-        Corpse c = CorpseRegistry.getCorpse(p);
+        Corpse c = plugin.getCorpseRegistry().getCorpse(p);
         if (c != null) {
             this.plugin.getLogger().warning("A corpse was left unhandled on the death of player: " + p.getName());
 
@@ -239,9 +223,9 @@ public class KOListener
 
     @EventHandler
     public void onIgnite(BlockIgniteEvent e) {
-        if (!KnockoutPlus.protectBlocks) return;
+        if (!plugin.protectBlocks) return;
         Location loc = e.getBlock().getLocation();
-        for (Corpse c : CorpseRegistry.getCorpses()) {
+        for (Corpse c : plugin.getCorpseRegistry().getCorpses()) {
             Location l = c.getLocation();
             if ((l.getWorld().equals(loc.getWorld())) &&
                     (l.distance(loc) <= 2.0D)) {
@@ -253,9 +237,9 @@ public class KOListener
 
     @EventHandler(ignoreCancelled = true)
     public void onPush(BlockPistonExtendEvent e) {
-        if (!KnockoutPlus.protectBlocks) return;
+        if (!plugin.protectBlocks) return;
         Location loc = e.getBlock().getLocation();
-        for (Corpse c : CorpseRegistry.getCorpses()) {
+        for (Corpse c : plugin.getCorpseRegistry().getCorpses()) {
             Location l = c.getLocation();
             if ((l.getWorld().equals(loc.getWorld())) &&
                     (l.distance(loc) <= 8.0D)) {
@@ -267,9 +251,9 @@ public class KOListener
 
     @EventHandler(ignoreCancelled = true)
     public void onPull(BlockPistonRetractEvent e) {
-        if (!KnockoutPlus.protectBlocks) return;
+        if (!plugin.protectBlocks) return;
         Location loc = e.getBlock().getLocation();
-        for (Corpse c : CorpseRegistry.getCorpses()) {
+        for (Corpse c : plugin.getCorpseRegistry().getCorpses()) {
             Location l = c.getLocation();
             if ((l.getWorld().equals(loc.getWorld())) &&
                     (l.distance(loc) <= 3.0D)) {
@@ -286,12 +270,12 @@ public class KOListener
         interrupt(p);
         Location loc;
         if ((e.getAction() == Action.RIGHT_CLICK_BLOCK) &&
-                (KnockoutPlus.protectBlocks)) {
+                (plugin.protectBlocks)) {
             Material mat = e.getPlayer().getEquipment().getItemInMainHand().getType();
             if ((mat == Material.WATER_BUCKET) || (mat == Material.LAVA_BUCKET) || (mat == Material.FLINT_AND_STEEL)) {
                 loc = e.getClickedBlock().getLocation();
 
-                for (Corpse c : CorpseRegistry.getCorpses()) {
+                for (Corpse c : plugin.getCorpseRegistry().getCorpses()) {
                     Location l = c.getLocation();
                     if ((l.getWorld().equals(loc.getWorld())) && (l.distance(loc) <= 4.0D)) {
                         e.setCancelled(true);
@@ -311,7 +295,7 @@ public class KOListener
 
         if (verdictDelay.contains(p.getUniqueId())) return;
 
-        for (Corpse c : CorpseRegistry.getVictims(p)) {
+        for (Corpse c : plugin.getCorpseRegistry().getVictims(p)) {
             Location l = c.getLocation();
             Location ploc = p.getLocation();
             if ((l.getWorld().equals(ploc.getWorld())) && (l.distance(ploc) <= 4.0D)) {
@@ -321,7 +305,7 @@ public class KOListener
 
                 Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
                             public void run() {
-                                KOListener.verdictDelay.remove(p.getUniqueId());
+                                plugin.getKoListener().verdictDelay.remove(p.getUniqueId());
                             }
                         }
                         , 25L);
@@ -332,27 +316,25 @@ public class KOListener
                     p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 40, 80, true));
 
                     final Location chantSpot = p.getLocation();
-                    int taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
-                                public void run() {
-                                    KOListener.chants.remove(p.getUniqueId());
-                                    if (!CorpseRegistry.isKnockedOut(v)) return;
+                    int taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
+                        plugin.getKoListener().chants.remove(p.getUniqueId());
+                        if (!plugin.getCorpseRegistry().isKnockedOut(v)) return;
 
-                                    if (p.getLocation().getWorld() == chantSpot.getWorld())
-                                        if (p.getLocation().distance(chantSpot) > 0.2D) {
-                                            p.sendMessage(ChatColor.RED + "You have been interrupted!");
-                                        } else {
-                                            PlayerExecuteEvent event = new PlayerExecuteEvent(p, v);
-                                            Bukkit.getPluginManager().callEvent(event);
-                                            if (event.isCancelled()) return;
+                        if (p.getLocation().getWorld() == chantSpot.getWorld())
+                            if (p.getLocation().distance(chantSpot) > 0.2D) {
+                                p.sendMessage(ChatColor.RED + "You have been interrupted!");
+                            } else {
+                                PlayerExecuteEvent event = new PlayerExecuteEvent(p, v);
+                                Bukkit.getPluginManager().callEvent(event);
+                                if (event.isCancelled()) return;
 
-                                            KnockoutPlus.removePlayer(v);
-                                            CorpseRegistry.getCorpse(v).unregister();
-                                            v.damage(1.0D);
-                                            KnockoutPlus.wakeOne(p);
-                                            v.setHealth(0.0D);
-                                        }
-                                }
+                                plugin.removePlayer(v);
+                                plugin.getCorpseRegistry().getCorpse(v).unregister();
+                                v.damage(1.0D);
+                                plugin.wakeOne(p);
+                                v.setHealth(0.0D);
                             }
+                    }
                             , 40L);
 
                     Integer oldTaskId = chants.put(p.getUniqueId(), taskId);
@@ -369,7 +351,7 @@ public class KOListener
                 if (event.isCancelled()) return;
 
                 p.sendMessage(ChatColor.GOLD + "You have allowed " + this.plugin.giveName(v) + ChatColor.GOLD + " to live.");
-                KnockoutPlus.revivePlayer(v, 4.0D);
+                plugin.revivePlayer(v, 4.0D);
                 c.unregister();
 
                 break;
@@ -467,8 +449,3 @@ public class KOListener
         return query.getApplicableRegions(l);
     }
 }
-
-/* Location:           C:\Users\Nick\Desktop\Minecraft\LOTC\LeadDev\plugins\KnockoutPlus.jar
- * Qualified Name:     io.github.archemedes.knockoutplus.KOListener
- * JD-Core Version:    0.6.2
- */
