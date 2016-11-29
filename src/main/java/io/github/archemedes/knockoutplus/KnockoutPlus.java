@@ -8,6 +8,11 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
+import com.sk89q.worldguard.bukkit.WGBukkit;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
+import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
@@ -28,8 +33,6 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
-import org.inventivetalent.apihelper.APIManager;
-import org.inventivetalent.regionapi.RegionAPI;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -48,18 +51,30 @@ public final class KnockoutPlus extends JavaPlugin {
     private Map<UUID, Long> recentKos = new HashMap<>();
     private ProtocolManager protocol;
 
-    private FlagInjector flagInjector;
+    private WorldGuardPlugin worldGuardPlugin;
     private CorpseRegistry corpseRegistry;
     private KOListener koListener;
     private BukkitTask bleedoutTask;
 
+    private final StateFlag PLAYER_KO = new StateFlag("player-knockout", true);
+    private final StateFlag MOB_KO = new StateFlag("mob-knockout", true);
+    private final StateFlag OTHER_KO = new StateFlag("environment-knockout", true);
+
     public void onEnable() {
-        APIManager.initAPI(RegionAPI.class);
+        worldGuardPlugin = WGBukkit.getPlugin();
+        FlagRegistry registry = worldGuardPlugin.getFlagRegistry();
+        try {
+            registry.register(PLAYER_KO);
+            registry.register(MOB_KO);
+            registry.register(OTHER_KO);
+        } catch (FlagConflictException e) {
+            getLogger().severe("There's a flag conflict!");
+        }
+
         corpseRegistry = new CorpseRegistry(this);
         koListener = new KOListener(this);
         saveDefaultConfig();
 
-        Bukkit.getPluginManager().registerEvents(flagInjector = new FlagInjector(), this);
         bleedoutTask = new BleedoutTimer(this).runTaskTimer(this, 0L, 133L);
 
         bleedoutTime = getConfig().getInt("bleedout.time");

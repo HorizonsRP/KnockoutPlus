@@ -136,7 +136,7 @@ public class KOListener implements Listener {
         }
 
         if (plugin.wasRecentlyKnockedOut(p)) return;
-        if (!plugin.isNonMobsKO() && !getSet(p.getLocation()).testState(WGBukkit.getPlugin().wrapPlayer(p), plugin.getFlagInjector().getOTHER_KO()))
+        if (!plugin.isNonMobsKO() && !getSet(p.getLocation()).testState(plugin.getWorldGuardPlugin().wrapPlayer(p), plugin.getOTHER_KO()))
             return;
 
         if ((e.getCause() == EntityDamageEvent.DamageCause.LAVA) || (e.getCause() == EntityDamageEvent.DamageCause.WITHER)) {
@@ -192,7 +192,7 @@ public class KOListener implements Listener {
         ApplicableRegionSet set = getSet(p.getLocation());
         LocalPlayer lp = WGBukkit.getPlugin().wrapPlayer(p);
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
-            if (plugin.playersKO && set.testState(lp, plugin.getFlagInjector().getPLAYER_KO())) {
+            if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
                 Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
@@ -200,7 +200,7 @@ public class KOListener implements Listener {
             return;
         }
 
-        if (plugin.mobsKO && set.testState(lp, plugin.getFlagInjector().getMOB_KO())) {
+        if (plugin.mobsKO && set.testState(lp, plugin.getMOB_KO())) {
             e.setCancelled(true);
             this.plugin.koPlayer(p);
         }
