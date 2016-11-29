@@ -320,35 +320,35 @@ public final class KnockoutPlus extends JavaPlugin {
         } else if (cmd.getName().equalsIgnoreCase("togglerevive")) {
             if ((args.length == 1) && ((sender.hasPermission("nexus.moderator")))) {
                 if (args[0].equalsIgnoreCase("players")) {
-                    if (playersKO) sender.sendMessage("Players will no longer cause knockout!");
-                    else
-                        sender.sendMessage("Players will now cause knockout!");
                     playersKO = !playersKO;
-
-                    return true;
+                    sender.sendMessage("Player knockout toggled to: " + ChatColor.AQUA + String.valueOf(nonMobsKO));
                 } else if (args[0].equalsIgnoreCase("mobs")) {
-                    if (mobsKO) sender.sendMessage("Mobs will no longer cause knockout!");
-                    else {
-                        sender.sendMessage("Mobs will now cause knockout!");
-                    }
                     mobsKO = !mobsKO;
-                    return true;
+                    sender.sendMessage("Mob knockout toggled to: " + ChatColor.AQUA + String.valueOf(nonMobsKO));
                 } else if (args[0].equalsIgnoreCase("environment")) {
-                    if (nonMobsKO) sender.sendMessage("Environment will no longer cause knockout!");
-                    else {
-                        sender.sendMessage("Environment will now cause knockout!");
-                    }
                     nonMobsKO = !nonMobsKO;
-                    return true;
-                } else if (args[0].equalsIgnoreCase("list")) {
-                    String gr = ChatColor.GRAY + "";
-                    String it = ChatColor.ITALIC + "";
-                    for (Corpse c : corpseRegistry.getCorpses()) {
-                        sender.sendMessage(gr + it + c.getVictim() + gr + " killed by " + it + c.getKiller() + gr + " at " + it + c.getLocation());
-                    }
-
-                    return true;
+                    sender.sendMessage("Environment knockout toggled to: " + ChatColor.AQUA + String.valueOf(nonMobsKO));
+                } else if (args[0].equalsIgnoreCase("all")) {
+                    playersKO = !playersKO;
+                    mobsKO = !mobsKO;
+                    nonMobsKO = !nonMobsKO;
+                    sender.sendMessage("All forms of Knockout have been toggled.");
+                } else {
+                    sender.sendMessage(ChatColor.RED + "Usage: /togglerevive [players/mobs/environment]");
                 }
+            }
+        } else if (cmd.getName().equalsIgnoreCase("knockout")) {
+            if (args[0].equalsIgnoreCase("list")) {
+                String gr = ChatColor.GRAY + "";
+                String it = ChatColor.ITALIC + "";
+                for (Corpse c : corpseRegistry.getCorpses()) {
+                    sender.sendMessage(gr + it + c.getVictim() + gr + " killed by " + it + c.getKiller() + gr + " at " + it + c.getLocation());
+                }
+
+            } else if (args[0].equalsIgnoreCase("status")) {
+                sender.sendMessage("Players: " + playersKO);
+                sender.sendMessage("Mobs: " + mobsKO);
+                sender.sendMessage("Environment: " + nonMobsKO);
             }
         }
 
