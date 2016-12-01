@@ -27,10 +27,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 public class KOListener implements Listener {
     ArrayList<UUID> verdictDelay = new ArrayList<>();
@@ -38,9 +35,13 @@ public class KOListener implements Listener {
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
+    Set<UUID> hackers;
+
     KOListener(KnockoutPlus plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
+
+        hackers = new HashSet<>();
     }
 
     public Player getPlayer(UUID uuid) {
@@ -118,7 +119,7 @@ public class KOListener implements Listener {
         if (p.getGameMode() == GameMode.CREATIVE) return;
 
         if ((e.getCause() == EntityDamageEvent.DamageCause.SUICIDE) || (e.getCause() == EntityDamageEvent.DamageCause.VOID)) {
-            Corpse c = plugin.getCorpseRegistry().register(p,p.getLocation());
+            Corpse c = plugin.getCorpseRegistry().register(p, p.getLocation());
             if ((c != null) &&
                     (e.getDamage() >= p.getHealth())) {
                 c.unregister();
@@ -136,7 +137,7 @@ public class KOListener implements Listener {
         }
 
         if (plugin.wasRecentlyKnockedOut(p)) return;
-        if (!plugin.isNonMobsKO() && !getSet(p.getLocation()).testState(plugin.getWorldGuardPlugin().wrapPlayer(p), plugin.getOTHER_KO()))
+        if (!plugin.isNonMobsKO() && !(getSet(p.getLocation()).testState(plugin.getWorldGuardPlugin().wrapPlayer(p), plugin.getOTHER_KO())))
             return;
 
         if ((e.getCause() == EntityDamageEvent.DamageCause.LAVA) || (e.getCause() == EntityDamageEvent.DamageCause.WITHER)) {
@@ -317,24 +318,24 @@ public class KOListener implements Listener {
 
                     final Location chantSpot = p.getLocation();
                     int taskId = Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
-                        plugin.getKoListener().chants.remove(p.getUniqueId());
-                        if (!plugin.getCorpseRegistry().isKnockedOut(v)) return;
+                                plugin.getKoListener().chants.remove(p.getUniqueId());
+                                if (!plugin.getCorpseRegistry().isKnockedOut(v)) return;
 
-                        if (p.getLocation().getWorld() == chantSpot.getWorld())
-                            if (p.getLocation().distance(chantSpot) > 0.2D) {
-                                p.sendMessage(ChatColor.RED + "You have been interrupted!");
-                            } else {
-                                PlayerExecuteEvent event = new PlayerExecuteEvent(p, v);
-                                Bukkit.getPluginManager().callEvent(event);
-                                if (event.isCancelled()) return;
+                                if (p.getLocation().getWorld() == chantSpot.getWorld())
+                                    if (p.getLocation().distance(chantSpot) > 0.2D) {
+                                        p.sendMessage(ChatColor.RED + "You have been interrupted!");
+                                    } else {
+                                        PlayerExecuteEvent event = new PlayerExecuteEvent(p, v);
+                                        Bukkit.getPluginManager().callEvent(event);
+                                        if (event.isCancelled()) return;
 
-                                plugin.removePlayer(v);
-                                plugin.getCorpseRegistry().getCorpse(v).unregister();
-                                v.damage(1.0D);
-                                plugin.wakeOne(p);
-                                v.setHealth(0.0D);
+                                        plugin.removePlayer(v);
+                                        plugin.getCorpseRegistry().getCorpse(v).unregister();
+                                        v.damage(1.0D);
+                                        plugin.wakeOne(p);
+                                        v.setHealth(0.0D);
+                                    }
                             }
-                    }
                             , 40L);
 
                     Integer oldTaskId = chants.put(p.getUniqueId(), taskId);
@@ -443,9 +444,33 @@ public class KOListener implements Listener {
         v.sendMessage(deathMsg);
     }
 
+    @EventHandler
+    public void entityDamage(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof Player) {
+            Player player = (Player) event.getDamager();
+
+            if (plugin.getCorpseRegistry().isKnockedOut(player)) {
+                if (!hackers.contains(player.getUniqueId())) {
+                    hackers.add(player.getUniqueId());
+                    for (Player p : Bukkit.getOnlinePlayers()) {
+                        if (p.hasPermission("knockout.alert")) {
+                            p.sendMessage(ChatColor.RED + "Warning! " + ChatColor.GRAY + "User " + ChatColor.AQUA + player.getName() + ChatColor.GRAY + " is using KillAura!");
+                        }
+                    }
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        hackers.remove(player.getUniqueId());
+                    }, 20 * 60 * 2);
+                }
+                event.setCancelled(true);
+            }
+        }
+    }
+
     private ApplicableRegionSet getSet(Location l) {
         RegionContainer cont = WGBukkit.getPlugin().getRegionContainer();
         RegionQuery query = cont.createQuery();
         return query.getApplicableRegions(l);
     }
+
+
 }
