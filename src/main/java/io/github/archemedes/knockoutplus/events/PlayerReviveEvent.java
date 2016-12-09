@@ -1,4 +1,4 @@
-package io.github.archemedes.knockoutplus;
+package io.github.archemedes.knockoutplus.events;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -31,8 +31,3 @@ public class PlayerReviveEvent extends KnockoutPlusEvent
 		OPERATOR
 	}
 }
-
-/* Location:           C:\Users\Nick\Desktop\Minecraft\LOTC\LeadDev\plugins\KnockoutPlus.jar
- * Qualified Name:     io.github.archemedes.knockoutplus.PlayerReviveEvent
- * JD-Core Version:    0.6.2
- */

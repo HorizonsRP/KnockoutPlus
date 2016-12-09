@@ -1,8 +1,9 @@
-name: Knockout Plus
+name: Knockout-Plus
 main: io.github.archemedes.knockoutplus.KnockoutPlus
 description: This plugin puts the 'cute' back in execute. Fight to the death or friendly brawl? The choice is yours. 
 version: ${project.version}
-depend: [ProtocolLib, WorldGuard, WGCustomFlags]
+load: STARTUP
+depend: [ProtocolLib, WorldGuard]
 authors: [Arche, Kowaman]
 
 commands:
@@ -18,11 +19,6 @@ commands:
      permission: knockoutplus.revive
      aliases: [d]
      usage: /damage [damage amount]
-   hunger:
-     description: This command causes you to lose hunger
-     permission: knockoutplus.revive
-     aliases: [hu]
-     usage: /hunger [hunger amount]
    d20:
      description: Instant ko-worthy damage
      permission: knockoutplus.revive
@@ -31,4 +27,8 @@ commands:
    togglerevive:
       description: This command lets you assist a knocked out character.
       permission: archecore.mod
-      usage: /togglerevive [mobs/environment/players]     
+      usage: /togglerevive [mobs/environment/players]
+   knockout:
+      description: Main command of KnockoutPlus
+      permission: knockoutplus.knockout
+      aliases: [knockoutplus, kp]

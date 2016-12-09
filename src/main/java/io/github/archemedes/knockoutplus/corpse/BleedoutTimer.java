@@ -1,21 +1,16 @@
 package io.github.archemedes.knockoutplus.corpse;
 
-import org.bukkit.plugin.Plugin;
+import io.github.archemedes.knockoutplus.KnockoutPlus;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class BleedoutTimer extends BukkitRunnable
-{
-  public BleedoutTimer(Plugin plugin)
-  {
-  }
+public class BleedoutTimer extends BukkitRunnable {
+    public KnockoutPlus plugin;
 
-  public void run()
-  {
-    CorpseRegistry.tick();
-  }
+    public BleedoutTimer(KnockoutPlus plugin) {
+        this.plugin = plugin;
+    }
+
+    public void run() {
+        plugin.getCorpseRegistry().tick();
+    }
 }
-
-/* Location:           C:\Users\Nick\Desktop\Minecraft\LOTC\LeadDev\plugins\KnockoutPlus.jar
- * Qualified Name:     io.github.archemedes.knockoutplus.corpse.BleedoutTimer
- * JD-Core Version:    0.6.2
- */
