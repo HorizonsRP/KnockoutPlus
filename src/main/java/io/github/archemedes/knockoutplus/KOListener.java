@@ -28,6 +28,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class KOListener implements Listener {
     ArrayList<UUID> verdictDelay = new ArrayList<>();
@@ -35,13 +36,26 @@ public class KOListener implements Listener {
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
-    Set<UUID> hackers;
+    Map<UUID, Long> hackers;
 
     KOListener(KnockoutPlus plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
 
-        hackers = new HashSet<>();
+        hackers = new HashMap<>();
+
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+
+            Iterator<Map.Entry<UUID, Long>> iterator = hackers.entrySet().iterator();
+            while(iterator.hasNext()) {
+                Map.Entry<UUID, Long> entry = iterator.next();
+                Long time = System.currentTimeMillis() - entry.getValue();
+
+                if (TimeUnit.MILLISECONDS.toMinutes(time) > 2) {
+                    iterator.remove();
+                }
+            }
+        },0, 20 * 60 * 2);
     }
 
     public Player getPlayer(UUID uuid) {
@@ -450,16 +464,15 @@ public class KOListener implements Listener {
             Player player = (Player) event.getDamager();
 
             if (plugin.getCorpseRegistry().isKnockedOut(player)) {
-                if (!hackers.contains(player.getUniqueId())) {
-                    hackers.add(player.getUniqueId());
+                if (hackers.containsKey(player.getUniqueId())) {
                     for (Player p : Bukkit.getOnlinePlayers()) {
                         if (p.hasPermission("knockout.alert")) {
                             p.sendMessage(ChatColor.RED + "Warning! " + ChatColor.GRAY + "User " + ChatColor.AQUA + player.getName() + ChatColor.GRAY + " is using KillAura!");
                         }
                     }
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                        hackers.remove(player.getUniqueId());
-                    }, 20 * 60 * 2);
+                    hackers.put(player.getUniqueId(), System.currentTimeMillis());
+                } else {
+                    hackers.put(player.getUniqueId(), System.currentTimeMillis());
                 }
                 event.setCancelled(true);
             }
