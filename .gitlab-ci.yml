@@ -1,6 +1,6 @@
 build:
   script:
-    - mvn clean install
+    - mvn clean package -B
   artifacts: 
     paths:
       - ./target/*.jar
