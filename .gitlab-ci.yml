@@ -1,5 +1,6 @@
 build:
   script:
+    - export
     - mvn clean package -B
   artifacts: 
     paths:
