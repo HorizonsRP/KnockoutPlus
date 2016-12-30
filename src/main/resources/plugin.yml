@@ -27,7 +27,7 @@ commands:
    togglerevive:
       description: This command lets you assist a knocked out character.
       permission: archecore.mod
-      usage: /togglerevive [mobs/environment/players]
+      usage: /togglerevive [mobs/environment/players/all]
    knockout:
       description: Main command of KnockoutPlus
       permission: knockoutplus.knockout
