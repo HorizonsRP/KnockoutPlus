@@ -14,7 +14,7 @@ deploy:
   - master
 deploy_to_dev:
   script:
-    - scp "./target/KnockoutPlus.jar" minecraft@31.187.74.212:"/home/minecraft/McMyAdmin/Minecraft/plugins/update/"
+    - scp "./target/KnockoutPlus.jar" minecraft@198.27.81.105:"/home/minecraft/dev/McMyAdmin/Minecraft/plugins_1.11.2/update/"
   when: manual
   only:
   - master
