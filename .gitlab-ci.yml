@@ -12,3 +12,9 @@ deploy:
   when: on_success
   only:
   - master
+deploy_to_dev:
+  script:
+    - scp "./target/KnockoutPlus.jar" minecraft@31.187.74.212:"/home/minecraft/McMyAdmin/Minecraft/plugins/update/"
+  when: manual
+  only:
+  - master
