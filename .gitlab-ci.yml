@@ -14,6 +14,7 @@ deploy:
   - master
 deploy_to_dev:
   script:
+    - mvn -B clean package
     - cp -f ./target/KnockoutPlus.jar /home/minecraft/dev/McMyAdmin/Minecraft/plugins_1.11.2/update/
   when: manual
   only:
