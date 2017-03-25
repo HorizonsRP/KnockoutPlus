@@ -18,7 +18,7 @@ deploy_to_dev:
     - whoami
     - pwd
     - ls
-    - docker cp ./target/KnockoutPlus.jar /home/minecraft/dev/McMyAdmin/Minecraft/plugins_1.11.2/update/
+    - scp "./target/KnockoutPlus.jar" minecraft@198.27.81.105:"/home/minecraft/dev/McMyAdmin/Minecraft/plugins_1.11.2/update/"
   when: manual
   only:
   - master
