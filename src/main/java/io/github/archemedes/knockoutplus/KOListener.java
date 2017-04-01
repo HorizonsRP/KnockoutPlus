@@ -1,6 +1,7 @@
 package io.github.archemedes.knockoutplus;
 
 
+import co.lotc.betterteams.Affixes;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.RegionContainer;
 import com.sk89q.worldguard.bukkit.RegionQuery;
@@ -88,14 +89,14 @@ public class KOListener implements Listener {
     public void onTarget(EntityTargetLivingEntityEvent e) {
         if ((e.getTarget() instanceof Player)) {
             Player p = (Player) e.getTarget();
-            if (plugin.getCorpseRegistry().isKnockedOut(p) && (plugin.isMobsUntarget()))
+            if (plugin.getCorpseRegistry().isKnockedOut(p) && (plugin.mobsUntarget))
                 e.setCancelled(true);
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
-        if (!plugin.isProtectBlocks()) return;
+        if (!plugin.protectBlocks) return;
         Location loc = e.getBlock().getLocation();
 
         for (Corpse c : plugin.getCorpseRegistry().getCorpses()) {
@@ -111,7 +112,7 @@ public class KOListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockPlaceEvent e) {
-        if (!plugin.isProtectBlocks()) return;
+        if (!plugin.protectBlocks) return;
         Location loc = e.getBlock().getLocation();
 
         for (Corpse c : plugin.getCorpseRegistry().getCorpses()) {
@@ -151,7 +152,7 @@ public class KOListener implements Listener {
         }
 
         if (plugin.wasRecentlyKnockedOut(p)) return;
-        if (!plugin.isNonMobsKO() && !(getSet(p.getLocation()).testState(plugin.getWorldGuardPlugin().wrapPlayer(p), plugin.getOTHER_KO())))
+        if (!plugin.nonMobsKO && !(getSet(p.getLocation()).testState(plugin.getWorldGuardPlugin().wrapPlayer(p), plugin.getOTHER_KO())))
             return;
 
         if ((e.getCause() == EntityDamageEvent.DamageCause.LAVA) || (e.getCause() == EntityDamageEvent.DamageCause.WITHER)) {
@@ -209,6 +210,13 @@ public class KOListener implements Listener {
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
             if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
                 Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
+                Affixes pa = new Affixes(p);
+                Affixes ka = new Affixes(k);
+                if(pa.getStatus().equals(ka.getStatus())){
+                    e.setCancelled(true);
+                    k.sendMessage(ChatColor.RED + "You may not damage a player with the same status as yourself.");
+                    return;
+                }
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
             }

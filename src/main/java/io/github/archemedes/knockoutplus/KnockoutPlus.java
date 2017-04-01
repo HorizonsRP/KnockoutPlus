@@ -481,4 +481,33 @@ public final class KnockoutPlus extends JavaPlugin {
     String giveName(Player p) {
         return p.getDisplayName() + ChatColor.GRAY + ChatColor.ITALIC + " (" + p.getName() + ")" + ChatColor.RESET;
     }
+
+    public CorpseRegistry getCorpseRegistry(){
+        return this.corpseRegistry;
+    }
+
+    public WorldGuardPlugin getWorldGuardPlugin(){
+        return this.worldGuardPlugin;
+    }
+
+    public StateFlag getOTHER_KO(){
+        return this.OTHER_KO;
+    }
+
+    public StateFlag getPLAYER_KO(){
+        return this.PLAYER_KO;
+    }
+
+    public StateFlag getMOB_KO(){
+        return this.MOB_KO;
+    }
+
+    public Map<UUID,Long> getRecentKos(){
+        return this.recentKos;
+    }
+
+    public KOListener getKoListener(){
+        return this.koListener;
+    }
+
 }
