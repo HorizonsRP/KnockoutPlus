@@ -32,3 +32,5 @@ commands:
       description: Main command of KnockoutPlus
       permission: knockoutplus.knockout
       aliases: [knockoutplus, kp]
+   wcstats:
+     description: Stats for war team

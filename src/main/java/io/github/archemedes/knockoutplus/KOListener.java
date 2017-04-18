@@ -37,6 +37,10 @@ public class KOListener implements Listener {
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
+    public HashMap<String,Integer> kills;
+    public HashMap<String,Double> damageDealt;
+    public HashMap<String,Double> damageTaken;
+
     Map<UUID, Long> hackers;
 
     KOListener(KnockoutPlus plugin) {
@@ -44,6 +48,10 @@ public class KOListener implements Listener {
         this.plugin = plugin;
 
         hackers = new HashMap<>();
+
+        kills = new HashMap<>();
+        damageDealt = new HashMap<>();
+        damageTaken = new HashMap<>();
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
 
@@ -203,8 +211,10 @@ public class KOListener implements Listener {
             return;
         }
         double trueDamage = e.getFinalDamage();
-        if (trueDamage < p.getHealth() - 0.1D) return;
         Entity killer = e.getDamager();
+        if (trueDamage < p.getHealth() - 0.1D){
+            return;
+        }
         ApplicableRegionSet set = getSet(p.getLocation());
         LocalPlayer lp = WGBukkit.getPlugin().wrapPlayer(p);
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
@@ -212,10 +222,12 @@ public class KOListener implements Listener {
                 Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
                 Affixes pa = new Affixes(p);
                 Affixes ka = new Affixes(k);
-                if(pa.getStatus().equals(ka.getStatus())){
-                    e.setCancelled(true);
-                    k.sendMessage(ChatColor.RED + "You may not damage a player with the same status as yourself.");
-                    return;
+                if(pa.getStatus() != null && ka.getStatus() != null) {
+                    if (pa.getStatus().equals(ka.getStatus())) {
+                        e.setCancelled(true);
+                        k.sendMessage(ChatColor.RED + "You may not damage a player with the same status as yourself.");
+                        return;
+                    }
                 }
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
@@ -241,6 +253,16 @@ public class KOListener implements Listener {
             this.plugin.getLogger().warning("A corpse was left unhandled on the death of player: " + p.getName());
 
             c.unregister();
+        }
+
+        Player k = event.getEntity().getKiller() instanceof Projectile ? (Player) ((Projectile) event.getEntity().getKiller()).getShooter() : (Player) event.getEntity().getKiller() ;
+        if(k != null){
+            if(kills.containsKey(k.getName())) {
+                int count = kills.get(k.getName()) + 1;
+                kills.put(k.getName(), count);
+            }else{
+                kills.put(k.getName(),1);
+            }
         }
     }
 
@@ -483,6 +505,31 @@ public class KOListener implements Listener {
                     hackers.put(player.getUniqueId(), System.currentTimeMillis());
                 }
                 event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void stats(EntityDamageByEntityEvent e){
+        if(e.getEntity() instanceof Player) {
+            Player p = (Player) e.getEntity();
+            if (!e.isCancelled()) {
+                if(damageTaken.containsKey(p.getName())) {
+                    double dmg = e.getFinalDamage() + damageTaken.get(p.getName());
+                    damageTaken.put(p.getName(), dmg);
+                }else{
+                    double dmg = e.getFinalDamage();
+                    damageTaken.put(p.getName(), dmg);
+                }
+
+                Player k = e.getDamager() instanceof Projectile ? (Player) ((Projectile) e.getDamager()).getShooter() : (Player) e.getDamager();
+                if(damageDealt.containsKey(k.getName())) {
+                    double dmg = e.getFinalDamage() + damageDealt.get(k.getName());
+                    damageDealt.put(k.getName(), dmg);
+                }else{
+                    double dmg = e.getFinalDamage();
+                    damageDealt.put(k.getName(), dmg);
+                }
             }
         }
     }

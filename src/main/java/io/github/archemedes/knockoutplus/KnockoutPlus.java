@@ -35,10 +35,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 public final class KnockoutPlus extends JavaPlugin {
@@ -178,6 +175,99 @@ public final class KnockoutPlus extends JavaPlugin {
 
     @SuppressWarnings("deprecation")
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if(cmd.getName().equalsIgnoreCase("wcstats")){
+            if (!(sender instanceof Player))
+                return true;
+            Player p = (Player) sender;
+            if (args.length != 1) {
+                p.sendMessage("Arguments are kills, damagetaken, damagedealt!");
+                return false;
+            }
+
+            if(args[0].equalsIgnoreCase("kills")){
+                Object[] a = koListener.kills.entrySet().toArray();
+                if(a.length > 0) {
+                    Arrays.sort(a, new Comparator() {
+                        public int compare(Object o1, Object o2) {
+                            return ((Map.Entry<String, Integer>) o2).getValue()
+                                    .compareTo(((Map.Entry<String, Integer>) o1).getValue());
+                        }
+                    });
+                    if(a.length > 10) {
+                        p.sendMessage(ChatColor.AQUA + ".:: Kills - Top 10 players ::.");
+                        for (int i = 0; i < 10; i++) {
+                            p.sendMessage(i + 1 + ") " + ((Map.Entry<String, Integer>) a[i]).getKey() + " : "
+                                    + ((Map.Entry<String, Integer>) a[i]).getValue() + " kills");
+                        }
+                    }else{
+                        p.sendMessage(ChatColor.AQUA + ".:: Kills - Top " + a.length + " players ::.");
+                        for (int i = 0; i < a.length; i++) {
+                            p.sendMessage(i + 1 + ") " + ((Map.Entry<String, Integer>) a[i]).getKey() + " : "
+                                    + ((Map.Entry<String, Integer>) a[i]).getValue() + " kills");
+                        }
+                    }
+                    return true;
+                }
+            }else if(args[0].equalsIgnoreCase("damagetaken")){
+                Object[] a = koListener.damageTaken.entrySet().toArray();
+                if(a.length > 0) {
+                    Arrays.sort(a, new Comparator() {
+                        public int compare(Object o1, Object o2) {
+                            return ((Map.Entry<String, Double>) o2).getValue()
+                                    .compareTo(((Map.Entry<String, Double>) o1).getValue());
+                        }
+                    });
+                    if(a.length > 10) {
+                        p.sendMessage(ChatColor.AQUA + ".:: Damage Taken - Top 10 players ::.");
+                        for (int i = 0; i < 10; i++) {
+                            p.sendMessage(i + 1 + ") " + ((Map.Entry<String, Double>) a[i]).getKey() + " : "
+                                    + ((Map.Entry<String, Double>) a[i]).getValue() + " damage taken!");
+                        }
+                    }else{
+                        p.sendMessage(ChatColor.AQUA + ".:: Damage Taken - Top " + a.length + " players ::.");
+                        for (int i = 0; i < a.length; i++) {
+                            p.sendMessage(i + 1 + ") " + ((Map.Entry<String, Double>) a[i]).getKey() + " : "
+                                    + ((Map.Entry<String, Double>) a[i]).getValue() + " damage taken!");
+                        }
+                    }
+                    return true;
+                }
+            }else if(args[0].equalsIgnoreCase("damagedealt")) {
+                Object[] a = koListener.damageDealt.entrySet().toArray();
+                if (a.length > 0) {
+                    Arrays.sort(a, new Comparator() {
+                        public int compare(Object o1, Object o2) {
+                            return ((Map.Entry<String, Double>) o2).getValue()
+                                    .compareTo(((Map.Entry<String, Double>) o1).getValue());
+                        }
+                    });
+                    if (a.length > 10) {
+                        p.sendMessage(ChatColor.AQUA + ".:: Damage Dealt - Top 10 players ::.");
+                        for (int i = 0; i < 10; i++) {
+                            p.sendMessage(i + 1 + ") " + ((Map.Entry<String, Double>) a[i]).getKey() + " : "
+                                    + ((Map.Entry<String, Double>) a[i]).getValue() + " damage dealt!");
+                        }
+                    } else {
+                        p.sendMessage(ChatColor.AQUA + ".:: Damage Dealt - Top " + a.length + " players ::.");
+                        for (int i = 0; i < a.length; i++) {
+                            p.sendMessage(i + 1 + ") " + ((Map.Entry<String, Double>) a[i]).getKey() + " : "
+                                    + ((Map.Entry<String, Double>) a[i]).getValue() + " damage dealt!");
+                        }
+                    }
+                    return true;
+                }
+            }else if(args[0].equalsIgnoreCase("clear")){
+                if(p.hasPermission("archecore.admin")){
+                    koListener.damageDealt.clear();
+                    koListener.damageTaken.clear();
+                    koListener.kills.clear();
+                }
+            }else{
+                p.sendMessage("Arguments are kills, damagetaken, damagedealt!");
+                return false;
+            }
+        }
+
         if (cmd.getName().equalsIgnoreCase("damage")) {
             if (!(sender instanceof Player))
                 return true;
