@@ -532,13 +532,21 @@ public class KOListener implements Listener {
                     damageTaken.put(p.getName(), dmg);
                 }
 
-                Player k = e.getDamager() instanceof Projectile ? (Player) ((Projectile) e.getDamager()).getShooter() : (Player) e.getDamager();
-                if(damageDealt.containsKey(k.getName())) {
-                    double dmg = e.getFinalDamage() + damageDealt.get(k.getName());
-                    damageDealt.put(k.getName(), dmg);
-                }else{
-                    double dmg = e.getFinalDamage();
-                    damageDealt.put(k.getName(), dmg);
+                Player k = null;
+                if (e.getDamager() instanceof Projectile
+                        && (((Projectile) e.getDamager()).getShooter() instanceof  Player)) {
+                    k = (Player) ((Projectile) e.getDamager()).getShooter();
+                } else if (e.getDamager() instanceof Player) {
+                    k = (Player) e.getDamager();
+                }
+                if (k != null) {
+                    if (damageDealt.containsKey(k.getName())) {
+                        double dmg = e.getFinalDamage() + damageDealt.get(k.getName());
+                        damageDealt.put(k.getName(), dmg);
+                    } else {
+                        double dmg = e.getFinalDamage();
+                        damageDealt.put(k.getName(), dmg);
+                    }
                 }
             }
         }
