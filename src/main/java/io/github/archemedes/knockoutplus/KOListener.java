@@ -38,9 +38,9 @@ public class KOListener implements Listener {
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
-    public HashMap<String,Integer> kills;
-    public HashMap<String,Double> damageDealt;
-    public HashMap<String,Double> damageTaken;
+    //public HashMap<String,Integer> kills;
+    //public HashMap<String,Double> damageDealt;
+    //public HashMap<String,Double> damageTaken;
 
     Map<UUID, Long> hackers;
 
@@ -50,9 +50,9 @@ public class KOListener implements Listener {
 
         hackers = new HashMap<>();
 
-        kills = new HashMap<>();
-        damageDealt = new HashMap<>();
-        damageTaken = new HashMap<>();
+        //kills = new HashMap<>();
+        //damageDealt = new HashMap<>();
+       // damageTaken = new HashMap<>();
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
 
@@ -257,7 +257,7 @@ public class KOListener implements Listener {
         }
 
 
-        Player k = null;
+       /* Player k = null;
 
         if (event.getEntity().getKiller() instanceof Projectile
                 && ((Projectile) event.getEntity().getKiller()).getShooter() instanceof Player) {
@@ -273,7 +273,7 @@ public class KOListener implements Listener {
             }else{
                 kills.put(k.getName(),1);
             }
-        }
+        }*/
     }
 
     @EventHandler
@@ -519,7 +519,7 @@ public class KOListener implements Listener {
         }
     }
 
-    @EventHandler
+   /* @EventHandler
     public void stats(EntityDamageByEntityEvent e){
         if(e.getEntity() instanceof Player) {
             Player p = (Player) e.getEntity();
@@ -542,7 +542,7 @@ public class KOListener implements Listener {
                 }
             }
         }
-    }
+    }*/
 
     private ApplicableRegionSet getSet(Location l) {
         RegionContainer cont = WGBukkit.getPlugin().getRegionContainer();
