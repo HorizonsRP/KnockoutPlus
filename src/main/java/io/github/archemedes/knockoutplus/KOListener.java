@@ -28,6 +28,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import javax.annotation.processing.ProcessingEnvironment;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -37,9 +38,9 @@ public class KOListener implements Listener {
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
-    //public HashMap<String,Integer> kills;
-    //public HashMap<String,Double> damageDealt;
-    //public HashMap<String,Double> damageTaken;
+    public HashMap<String,Integer> kills;
+    public HashMap<String,Double> damageDealt;
+    public HashMap<String,Double> damageTaken;
 
     Map<UUID, Long> hackers;
 
@@ -49,9 +50,9 @@ public class KOListener implements Listener {
 
         hackers = new HashMap<>();
 
-        //kills = new HashMap<>();
-        //damageDealt = new HashMap<>();
-        //damageTaken = new HashMap<>();
+        kills = new HashMap<>();
+        damageDealt = new HashMap<>();
+        damageTaken = new HashMap<>();
 
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
 
@@ -255,7 +256,16 @@ public class KOListener implements Listener {
             c.unregister();
         }
 
-       /* Player k = event.getEntity().getKiller() instanceof Projectile ? (Player) ((Projectile) event.getEntity().getKiller()).getShooter() : (Player) event.getEntity().getKiller() ;
+
+        Player k = null;
+
+        if (event.getEntity().getKiller() instanceof Projectile
+                && ((Projectile) event.getEntity().getKiller()).getShooter() instanceof Player) {
+            k = (Player) ((Projectile) event.getEntity().getKiller()).getShooter();
+        } else if (event.getEntity().getKiller() instanceof Player) {
+            k = event.getEntity().getKiller();
+        }
+
         if(k != null){
             if(kills.containsKey(k.getName())) {
                 int count = kills.get(k.getName()) + 1;
@@ -263,7 +273,7 @@ public class KOListener implements Listener {
             }else{
                 kills.put(k.getName(),1);
             }
-        }*/
+        }
     }
 
     @EventHandler
@@ -508,7 +518,7 @@ public class KOListener implements Listener {
             }
         }
     }
-/*
+
     @EventHandler
     public void stats(EntityDamageByEntityEvent e){
         if(e.getEntity() instanceof Player) {
@@ -533,7 +543,7 @@ public class KOListener implements Listener {
             }
         }
     }
-*/
+
     private ApplicableRegionSet getSet(Location l) {
         RegionContainer cont = WGBukkit.getPlugin().getRegionContainer();
         RegionQuery query = cont.createQuery();
