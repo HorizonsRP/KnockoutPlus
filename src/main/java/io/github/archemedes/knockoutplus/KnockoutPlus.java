@@ -175,7 +175,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
     @SuppressWarnings("deprecation")
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if(cmd.getName().equalsIgnoreCase("wcstats")){
+        /*if(cmd.getName().equalsIgnoreCase("wcstats")){
             if (!(sender instanceof Player))
                 return true;
             Player p = (Player) sender;
@@ -266,7 +266,7 @@ public final class KnockoutPlus extends JavaPlugin {
                 p.sendMessage("Arguments are kills, damagetaken, damagedealt!");
                 return false;
             }
-        }
+        }*/
 
         if (cmd.getName().equalsIgnoreCase("damage")) {
             if (!(sender instanceof Player))
