@@ -18,13 +18,14 @@ import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import lombok.Getter;
-import net.minecraft.server.v1_11_R1.PacketPlayOutEntity;
+import net.minecraft.server.v1_12_R1.PacketPlayOutEntity;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_11_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -164,7 +165,7 @@ public final class KnockoutPlus extends JavaPlugin {
         wake(player, player.getLocation(), true);
         removePlayer(player);
 
-        player.setHealth(Math.min(player.getMaxHealth(), hp));
+        player.setHealth(Math.min(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue(), hp));
         player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 400, 5, true), true);
         player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 400, 1, true), true);
 
@@ -499,7 +500,7 @@ public final class KnockoutPlus extends JavaPlugin {
         p.setBedSpawnLocation(null);
         p.leaveVehicle();
         p.setFireTicks(0);
-        p.setHealth(p.getMaxHealth());
+        p.setHealth(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 
         p.setVelocity(new Vector(0, 0, 0));
 
