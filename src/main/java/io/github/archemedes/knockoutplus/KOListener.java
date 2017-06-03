@@ -42,30 +42,13 @@ public class KOListener implements Listener {
     //public HashMap<String,Double> damageDealt;
     //public HashMap<String,Double> damageTaken;
 
-    Map<UUID, Long> hackers;
-
     KOListener(KnockoutPlus plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
 
-        hackers = new HashMap<>();
-
         //kills = new HashMap<>();
         //damageDealt = new HashMap<>();
        // damageTaken = new HashMap<>();
-
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-
-            Iterator<Map.Entry<UUID, Long>> iterator = hackers.entrySet().iterator();
-            while(iterator.hasNext()) {
-                Map.Entry<UUID, Long> entry = iterator.next();
-                Long time = System.currentTimeMillis() - entry.getValue();
-
-                if (TimeUnit.MILLISECONDS.toMinutes(time) > 2) {
-                    iterator.remove();
-                }
-            }
-        },0, 20 * 60 * 2);
     }
 
     public Player getPlayer(UUID uuid) {
@@ -504,16 +487,6 @@ public class KOListener implements Listener {
             Player player = (Player) event.getDamager();
 
             if (plugin.getCorpseRegistry().isKnockedOut(player)) {
-                if (hackers.containsKey(player.getUniqueId())) {
-                    for (Player p : Bukkit.getOnlinePlayers()) {
-                        if (p.hasPermission("knockout.alert")) {
-                            p.sendMessage(ChatColor.RED + "Warning! " + ChatColor.GRAY + "User " + ChatColor.AQUA + player.getName() + ChatColor.GRAY + " is using KillAura!");
-                        }
-                    }
-                    hackers.put(player.getUniqueId(), System.currentTimeMillis());
-                } else {
-                    hackers.put(player.getUniqueId(), System.currentTimeMillis());
-                }
                 event.setCancelled(true);
             }
         }
