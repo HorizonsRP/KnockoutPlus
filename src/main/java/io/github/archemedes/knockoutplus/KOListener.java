@@ -179,8 +179,33 @@ public class KOListener implements Listener {
             p.setHealth(0.0D);
         }
     }
+    
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onFriendlyFire (EntityDamageByEntityEvent e) {
+    	if (!(e.getEntity() instanceof Player)) return;
+    	 Entity killer = e.getDamager();
+    	 Player p = (Player) e.getEntity();
+    	 LocalPlayer lp = WGBukkit.getPlugin().wrapPlayer(p);
+    	 ApplicableRegionSet set = getSet(p.getLocation());
+         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
+             if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
+                 Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
+                 Affixes pa = new Affixes(p);
+                 Affixes ka = new Affixes(k);
+                 if(pa.getStatus() != null && ka.getStatus() != null) {
+                     if (pa.getStatus().equals(ka.getStatus())) {
+                         e.setCancelled(true);
+                         k.sendMessage(ChatColor.RED + "You may not damage a player with the same status as yourself.");
+                         return;
+                     }
+                 }
+             }
+             return;
+         }
+    	
+    }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerHit(EntityDamageByEntityEvent e) {
         if (!(e.getEntity() instanceof Player)) return;
         Player p = (Player) e.getEntity();
@@ -195,30 +220,23 @@ public class KOListener implements Listener {
             return;
         }
         double trueDamage = e.getFinalDamage();
-        Entity killer = e.getDamager();
+        
         if (trueDamage < p.getHealth() - 0.1D){
             return;
         }
-        ApplicableRegionSet set = getSet(p.getLocation());
+        
         LocalPlayer lp = WGBukkit.getPlugin().wrapPlayer(p);
+        ApplicableRegionSet set = getSet(p.getLocation());
+        Entity killer = e.getDamager();
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
             if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
                 Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
-                Affixes pa = new Affixes(p);
-                Affixes ka = new Affixes(k);
-                if(pa.getStatus() != null && ka.getStatus() != null) {
-                    if (pa.getStatus().equals(ka.getStatus())) {
-                        e.setCancelled(true);
-                        k.sendMessage(ChatColor.RED + "You may not damage a player with the same status as yourself.");
-                        return;
-                    }
-                }
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
             }
             return;
         }
-
+        
         if (plugin.mobsKO && set.testState(lp, plugin.getMOB_KO())) {
             e.setCancelled(true);
             this.plugin.koPlayer(p);
