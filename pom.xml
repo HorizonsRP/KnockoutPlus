@@ -59,7 +59,7 @@
         <dependency>
             <groupId>co.lotc</groupId>
             <artifactId>BetterTeams</artifactId>
-            <version>1.112.0</version>
+            <version>1.112.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>
