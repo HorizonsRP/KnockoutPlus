@@ -1,7 +1,6 @@
 package io.github.archemedes.knockoutplus;
 
-
-import co.lotc.betterteams.Affixes;
+import net.lordofthecraft.betterteams.Affixes;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.bukkit.RegionContainer;
 import com.sk89q.worldguard.bukkit.RegionQuery;
@@ -10,6 +9,7 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
+
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -30,7 +30,6 @@ import org.bukkit.potion.PotionEffectType;
 
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class KOListener implements Listener {
     ArrayList<UUID> verdictDelay = new ArrayList<>();

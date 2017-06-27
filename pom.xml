@@ -38,7 +38,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
-            <version>1.12-pre5-SNAPSHOT</version>
+            <version>1.12-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -57,9 +57,16 @@
             <version>1.16.16</version>
         </dependency>
         <dependency>
-            <groupId>co.lotc</groupId>
+            <groupId>net.lordofthecraft</groupId>
             <artifactId>BetterTeams</artifactId>
             <version>1.12.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+            
         </dependency>
     </dependencies>
 
