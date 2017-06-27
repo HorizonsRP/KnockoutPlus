@@ -42,30 +42,13 @@ public class KOListener implements Listener {
     //public HashMap<String,Double> damageDealt;
     //public HashMap<String,Double> damageTaken;
 
-    Map<UUID, Long> hackers;
-
     KOListener(KnockoutPlus plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
 
-        hackers = new HashMap<>();
-
         //kills = new HashMap<>();
         //damageDealt = new HashMap<>();
        // damageTaken = new HashMap<>();
-
-        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-
-            Iterator<Map.Entry<UUID, Long>> iterator = hackers.entrySet().iterator();
-            while(iterator.hasNext()) {
-                Map.Entry<UUID, Long> entry = iterator.next();
-                Long time = System.currentTimeMillis() - entry.getValue();
-
-                if (TimeUnit.MILLISECONDS.toMinutes(time) > 2) {
-                    iterator.remove();
-                }
-            }
-        },0, 20 * 60 * 2);
     }
 
     public Player getPlayer(UUID uuid) {
@@ -196,8 +179,33 @@ public class KOListener implements Listener {
             p.setHealth(0.0D);
         }
     }
+    
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    public void onFriendlyFire (EntityDamageByEntityEvent e) {
+    	if (!(e.getEntity() instanceof Player)) return;
+    	 Entity killer = e.getDamager();
+    	 Player p = (Player) e.getEntity();
+    	 LocalPlayer lp = WGBukkit.getPlugin().wrapPlayer(p);
+    	 ApplicableRegionSet set = getSet(p.getLocation());
+         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
+             if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
+                 Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
+                 Affixes pa = new Affixes(p);
+                 Affixes ka = new Affixes(k);
+                 if(pa.getStatus() != null && ka.getStatus() != null) {
+                     if (pa.getStatus().equals(ka.getStatus())) {
+                         e.setCancelled(true);
+                         k.sendMessage(ChatColor.RED + "You may not damage a player with the same status as yourself.");
+                         return;
+                     }
+                 }
+             }
+             return;
+         }
+    	
+    }
 
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerHit(EntityDamageByEntityEvent e) {
         if (!(e.getEntity() instanceof Player)) return;
         Player p = (Player) e.getEntity();
@@ -212,30 +220,23 @@ public class KOListener implements Listener {
             return;
         }
         double trueDamage = e.getFinalDamage();
-        Entity killer = e.getDamager();
+        
         if (trueDamage < p.getHealth() - 0.1D){
             return;
         }
-        ApplicableRegionSet set = getSet(p.getLocation());
+        
         LocalPlayer lp = WGBukkit.getPlugin().wrapPlayer(p);
+        ApplicableRegionSet set = getSet(p.getLocation());
+        Entity killer = e.getDamager();
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
             if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
                 Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
-                Affixes pa = new Affixes(p);
-                Affixes ka = new Affixes(k);
-                if(pa.getStatus() != null && ka.getStatus() != null) {
-                    if (pa.getStatus().equals(ka.getStatus())) {
-                        e.setCancelled(true);
-                        k.sendMessage(ChatColor.RED + "You may not damage a player with the same status as yourself.");
-                        return;
-                    }
-                }
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
             }
             return;
         }
-
+        
         if (plugin.mobsKO && set.testState(lp, plugin.getMOB_KO())) {
             e.setCancelled(true);
             this.plugin.koPlayer(p);
@@ -504,16 +505,6 @@ public class KOListener implements Listener {
             Player player = (Player) event.getDamager();
 
             if (plugin.getCorpseRegistry().isKnockedOut(player)) {
-                if (hackers.containsKey(player.getUniqueId())) {
-                    for (Player p : Bukkit.getOnlinePlayers()) {
-                        if (p.hasPermission("knockout.alert")) {
-                            p.sendMessage(ChatColor.RED + "Warning! " + ChatColor.GRAY + "User " + ChatColor.AQUA + player.getName() + ChatColor.GRAY + " is using KillAura!");
-                        }
-                    }
-                    hackers.put(player.getUniqueId(), System.currentTimeMillis());
-                } else {
-                    hackers.put(player.getUniqueId(), System.currentTimeMillis());
-                }
                 event.setCancelled(true);
             }
         }
@@ -532,13 +523,21 @@ public class KOListener implements Listener {
                     damageTaken.put(p.getName(), dmg);
                 }
 
-                Player k = e.getDamager() instanceof Projectile ? (Player) ((Projectile) e.getDamager()).getShooter() : (Player) e.getDamager();
-                if(damageDealt.containsKey(k.getName())) {
-                    double dmg = e.getFinalDamage() + damageDealt.get(k.getName());
-                    damageDealt.put(k.getName(), dmg);
-                }else{
-                    double dmg = e.getFinalDamage();
-                    damageDealt.put(k.getName(), dmg);
+                Player k = null;
+                if (e.getDamager() instanceof Projectile
+                        && (((Projectile) e.getDamager()).getShooter() instanceof  Player)) {
+                    k = (Player) ((Projectile) e.getDamager()).getShooter();
+                } else if (e.getDamager() instanceof Player) {
+                    k = (Player) e.getDamager();
+                }
+                if (k != null) {
+                    if (damageDealt.containsKey(k.getName())) {
+                        double dmg = e.getFinalDamage() + damageDealt.get(k.getName());
+                        damageDealt.put(k.getName(), dmg);
+                    } else {
+                        double dmg = e.getFinalDamage();
+                        damageDealt.put(k.getName(), dmg);
+                    }
                 }
             }
         }

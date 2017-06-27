@@ -67,6 +67,8 @@ public final class KnockoutPlus extends JavaPlugin {
             registry.register(OTHER_KO);
         } catch (FlagConflictException e) {
             getLogger().severe("There's a flag conflict!");
+        } catch (IllegalStateException e) {
+            getLogger().warning("Failed to register flags. You shouldn't be reloading this plugin!");
         }
 
         corpseRegistry = new CorpseRegistry(this);
