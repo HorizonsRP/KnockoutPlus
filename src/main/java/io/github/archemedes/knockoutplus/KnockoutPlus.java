@@ -172,7 +172,9 @@ public final class KnockoutPlus extends JavaPlugin {
         player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 400, 1, true), true);
 
         Location l = player.getLocation();
-
+        if (l.getBlock().getType().equals(Material.WATER) || l.getBlock().getType().equals(Material.STATIONARY_WATER)) { //adds waterbreathing if player dies in water
+        	player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 400, 100));
+        }
         player.getWorld().spawnParticle(org.bukkit.Particle.HEART, player.getLocation(), 1);
     }
 
