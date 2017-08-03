@@ -59,7 +59,7 @@
         <dependency>
             <groupId>net.lordofthecraft</groupId>
             <artifactId>BetterTeams</artifactId>
-            <version>1.12.0</version>
+            <version>1.12.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

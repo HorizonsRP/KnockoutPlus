@@ -189,8 +189,8 @@ public class KOListener implements Listener {
          if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
              if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
                  Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
-                 Affixes pa = new Affixes(p);
-                 Affixes ka = new Affixes(k);
+                 Affixes pa = Affixes.fromExistingTeams(p);
+                 Affixes ka = Affixes.fromExistingTeams(k);
                  if(pa.getStatus() != null && ka.getStatus() != null) {
                      if (pa.getStatus().equals(ka.getStatus())) {
                          e.setCancelled(true);
