@@ -385,7 +385,7 @@ public class KOListener implements Listener {
 
                                         plugin.removePlayer(v);
                                         plugin.getCorpseRegistry().getCorpse(v).unregister();
-                                        v.damage(1.0D);
+                                        v.damage(1.0D, p);
                                         plugin.wakeOne(p);
                                         v.setHealth(0.0D);
                                     }
