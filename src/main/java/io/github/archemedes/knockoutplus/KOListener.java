@@ -1,23 +1,27 @@
 package io.github.archemedes.knockoutplus;
 
-import net.lordofthecraft.betterteams.Affixes;
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.bukkit.RegionContainer;
-import com.sk89q.worldguard.bukkit.RegionQuery;
-import com.sk89q.worldguard.bukkit.WGBukkit;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import io.github.archemedes.knockoutplus.corpse.Corpse;
-import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
-import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Random;
+import java.util.UUID;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
@@ -25,11 +29,20 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.bukkit.RegionContainer;
+import com.sk89q.worldguard.bukkit.RegionQuery;
+import com.sk89q.worldguard.bukkit.WGBukkit;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
 
-import java.util.*;
+import io.github.archemedes.knockoutplus.corpse.Corpse;
+import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
+import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
+import net.lordofthecraft.betterteams.Affixes;
 
 public class KOListener implements Listener {
     ArrayList<UUID> verdictDelay = new ArrayList<>();
@@ -156,6 +169,10 @@ public class KOListener implements Listener {
                 || (e.getCause() == EntityDamageEvent.DamageCause.MAGIC)) {
             return;
         }
+        
+        if(holdingTotem(p))
+        	return;
+        
         if (e.getDamage() < p.getHealth()) {
             return;
         }
@@ -166,6 +183,13 @@ public class KOListener implements Listener {
         }
     }
 
+    private boolean holdingTotem(Player p) {
+    	PlayerInventory i = p.getInventory();
+    	
+    	return i.getItemInMainHand().getType() == Material.TOTEM 
+    			|| i.getItemInOffHand().getType() == Material.TOTEM;
+    }
+    
     @EventHandler
     public void onPlayerLog(PlayerQuitEvent e) {
         Player p = e.getPlayer();
@@ -229,14 +253,14 @@ public class KOListener implements Listener {
         Entity killer = e.getDamager();
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
             if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
-                Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
+            	Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
             }
             return;
         }
         
-        if (plugin.mobsKO && set.testState(lp, plugin.getMOB_KO())) {
+        if (!holdingTotem(p) && plugin.mobsKO && set.testState(lp, plugin.getMOB_KO())) {
             e.setCancelled(true);
             this.plugin.koPlayer(p);
         }
