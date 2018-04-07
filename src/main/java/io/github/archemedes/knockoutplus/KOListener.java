@@ -516,39 +516,6 @@ public class KOListener implements Listener {
         }
     }
 
-   /* @EventHandler
-    public void stats(EntityDamageByEntityEvent e){
-        if(e.getEntity() instanceof Player) {
-            Player p = (Player) e.getEntity();
-            if (!e.isCancelled()) {
-                if(damageTaken.containsKey(p.getName())) {
-                    double dmg = e.getFinalDamage() + damageTaken.get(p.getName());
-                    damageTaken.put(p.getName(), dmg);
-                }else{
-                    double dmg = e.getFinalDamage();
-                    damageTaken.put(p.getName(), dmg);
-                }
-
-                Player k = null;
-                if (e.getDamager() instanceof Projectile
-                        && (((Projectile) e.getDamager()).getShooter() instanceof  Player)) {
-                    k = (Player) ((Projectile) e.getDamager()).getShooter();
-                } else if (e.getDamager() instanceof Player) {
-                    k = (Player) e.getDamager();
-                }
-                if (k != null) {
-                    if (damageDealt.containsKey(k.getName())) {
-                        double dmg = e.getFinalDamage() + damageDealt.get(k.getName());
-                        damageDealt.put(k.getName(), dmg);
-                    } else {
-                        double dmg = e.getFinalDamage();
-                        damageDealt.put(k.getName(), dmg);
-                    }
-                }
-            }
-        }
-    }*/
-
     private ApplicableRegionSet getSet(Location l) {
         RegionContainer cont = WGBukkit.getPlugin().getRegionContainer();
         RegionQuery query = cont.createQuery();
