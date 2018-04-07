@@ -11,6 +11,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -24,6 +25,7 @@ import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
@@ -50,17 +52,9 @@ public class KOListener implements Listener {
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
-    //public HashMap<String,Integer> kills;
-    //public HashMap<String,Double> damageDealt;
-    //public HashMap<String,Double> damageTaken;
-
     KOListener(KnockoutPlus plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
-
-        //kills = new HashMap<>();
-        //damageDealt = new HashMap<>();
-       // damageTaken = new HashMap<>();
     }
 
     public Player getPlayer(UUID uuid) {
@@ -129,6 +123,14 @@ public class KOListener implements Listener {
             }
         }
     }
+    
+    @EventHandler(ignoreCancelled = true)
+		public void rez(EntityResurrectEvent e) {
+    	if(e.getEntityType() == EntityType.PLAYER) {
+    		Player p = (Player) e.getEntity();
+    		if(plugin.wasRecentlyKnockedOut(p)) e.setCancelled(true);
+    	}
+		}
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerDamage(EntityDamageEvent e) {
@@ -279,25 +281,6 @@ public class KOListener implements Listener {
 
             c.unregister();
         }
-
-
-       /* Player k = null;
-
-        if (event.getEntity().getKiller() instanceof Projectile
-                && ((Projectile) event.getEntity().getKiller()).getShooter() instanceof Player) {
-            k = (Player) ((Projectile) event.getEntity().getKiller()).getShooter();
-        } else if (event.getEntity().getKiller() instanceof Player) {
-            k = event.getEntity().getKiller();
-        }
-
-        if(k != null){
-            if(kills.containsKey(k.getName())) {
-                int count = kills.get(k.getName()) + 1;
-                kills.put(k.getName(), count);
-            }else{
-                kills.put(k.getName(),1);
-            }
-        }*/
     }
 
     @EventHandler
