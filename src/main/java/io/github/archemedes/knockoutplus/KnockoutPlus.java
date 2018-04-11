@@ -252,7 +252,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
             final Corpse corpse = corpseRegistry.getCorpse(target);
             Player killer = koListener.getPlayer(corpse.getKiller());
-            if (!(sender instanceof Player) || (Lists.newArrayList(args).contains("gm") && sender.hasPermission("archecore.mod"))) {
+            if (!(sender instanceof Player) || ((Lists.newArrayList(args).contains("gm") || Lists.newArrayList(args).contains("-gm")) && sender.hasPermission("archecore.mod"))) {
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
