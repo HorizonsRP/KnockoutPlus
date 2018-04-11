@@ -63,13 +63,16 @@ public class CorpseRegistry {
     }
 
     public void tick() {
-        int t = plugin.bleedoutTime * 1000;
-        int u = (int) (t * 0.7D);
+
         long now = System.currentTimeMillis();
         Iterator iter = victims.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
             Corpse c = (Corpse) entry.getValue();
+            
+            long t = c.getBleedoutTime() * 1000;
+            long u = (int) (t * 0.7D);
+            
             long diff = now - c.whenKnockedOut();
             if (diff > t) {
                 iter.remove();

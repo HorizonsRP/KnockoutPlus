@@ -140,10 +140,8 @@ public class KOListener implements Listener {
         if (p.getGameMode() == GameMode.CREATIVE) return;
 
         if ((e.getCause() == EntityDamageEvent.DamageCause.SUICIDE) || (e.getCause() == EntityDamageEvent.DamageCause.VOID)) {
-            Corpse c = plugin.getCorpseRegistry().register(p, p.getLocation());
-            if ((c != null) &&
-                    (e.getDamage() >= p.getHealth())) {
-                c.unregister();
+            if (plugin.getCorpseRegistry().isKnockedOut(p) && (e.getDamage() >= p.getHealth())) {
+                plugin.getCorpseRegistry().getCorpse(p).unregister();
                 p.damage(1.0D);
                 plugin.wakeOne(p);
                 p.setHealth(0.0D);

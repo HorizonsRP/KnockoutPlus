@@ -18,6 +18,8 @@ import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import lombok.Getter;
+import net.lordofthecraft.arche.attributes.ArcheAttribute;
+import net.lordofthecraft.arche.attributes.AttributeRegistry;
 import net.minecraft.server.v1_12_R1.PacketPlayOutEntity;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -40,6 +42,8 @@ import java.util.*;
 
 @Getter
 public final class KnockoutPlus extends JavaPlugin {
+		private ArcheAttribute bleedoutAttribute;
+	
     public int bleedoutTime;
     public boolean mobsUntarget;
     public boolean playersKO;
@@ -84,6 +88,10 @@ public final class KnockoutPlus extends JavaPlugin {
         nonMobsKO = getConfig().getBoolean("nonmobs.cause.knockout");
         protectBlocks = getConfig().getBoolean("protect.ko.blocks");
 
+        bleedoutAttribute = new ArcheAttribute("Bleedout Time", bleedoutTime);
+        AttributeRegistry.getInstance().register(bleedoutAttribute);
+        
+        
         protocol = ProtocolLibrary.getProtocolManager();
 
         protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
@@ -251,6 +259,12 @@ public final class KnockoutPlus extends JavaPlugin {
 
 
             final Corpse corpse = corpseRegistry.getCorpse(target);
+            
+            if(!corpse.allowedToRevive(sender)) { //Putting this req here cockblocks GMs
+            	sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped by you.");
+              return true;
+            }
+            
             Player killer = koListener.getPlayer(corpse.getKiller());
             if (!(sender instanceof Player) || ((Lists.newArrayList(args).contains("gm") || Lists.newArrayList(args).contains("-gm")) && sender.hasPermission("archecore.mod"))) {
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);

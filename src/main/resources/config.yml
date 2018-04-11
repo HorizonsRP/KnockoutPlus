@@ -6,4 +6,4 @@ nonmobs.cause.knockout: true
 
 protect.ko.blocks: true
 
-bleedout.time: 90
+bleedout.time: 30
