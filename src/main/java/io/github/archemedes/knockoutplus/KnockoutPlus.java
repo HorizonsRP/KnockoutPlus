@@ -21,6 +21,8 @@ import lombok.Getter;
 import net.lordofthecraft.arche.attributes.ArcheAttribute;
 import net.lordofthecraft.arche.attributes.AttributeRegistry;
 import net.minecraft.server.v1_12_R1.PacketPlayOutEntity;
+
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -266,7 +268,7 @@ public final class KnockoutPlus extends JavaPlugin {
             }
             
             Player killer = koListener.getPlayer(corpse.getKiller());
-            if (!(sender instanceof Player) || ((Lists.newArrayList(args).contains("gm") || Lists.newArrayList(args).contains("-gm")) && sender.hasPermission("archecore.mod"))) {
+            if(!(sender instanceof Player) || ( Arrays.stream(args).anyMatch(x->StringUtils.equalsAny(x, "gm","-gm")) && sender.hasPermission("archecore.mod"))) {
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
