@@ -40,7 +40,7 @@ public class Corpse {
 		
 		Persona ps = ArcheCore.getPersona(victim);
 		this.bleedoutTime = ps != null? (long) ps.attributes().getAttributeValue(plugin.getBleedoutAttribute()) : plugin.getBleedoutTime();
-		long distance = 4 * this.bleedoutTime; 
+		long distance = (long) (2.5 * this.bleedoutTime); 
 		
 		allowedRevives = Bukkit.getOnlinePlayers().stream()
 			.filter(p->p.getLocation().distance(where) < distance)
