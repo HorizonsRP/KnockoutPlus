@@ -262,13 +262,12 @@ public final class KnockoutPlus extends JavaPlugin {
 
             final Corpse corpse = corpseRegistry.getCorpse(target);
             
-            if(!corpse.allowedToRevive(sender)) { //Putting this req here cockblocks GMs
-            	sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped by you.");
-              return true;
-            }
-            
             Player killer = koListener.getPlayer(corpse.getKiller());
             if(!(sender instanceof Player) || ( Arrays.stream(args).anyMatch(x->StringUtils.equalsAny(x, "gm","-gm")) && sender.hasPermission("archecore.mod"))) {
+            	if (!corpse.allowedToRevive(sender) && !sender.hasPermission("archecore.admin")) {
+            		sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped by you.");
+                	return true;
+            	}
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
@@ -277,6 +276,13 @@ public final class KnockoutPlus extends JavaPlugin {
                 }
                 return true;
             }
+            
+            if(!corpse.allowedToRevive(sender)) { 
+            	sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped by you.");
+            	return true;
+            }
+            
+            
 
             player = (Player) sender;
 
@@ -291,8 +297,13 @@ public final class KnockoutPlus extends JavaPlugin {
             }
 
             if (player.equals(killer)) {
-                sender.sendMessage(ChatColor.RED + "Use a right click on this player instead!");
-                return true;
+            	PlayerReviveEvent event = new PlayerReviveEvent(player, target, PlayerReviveEvent.Reason.MERCY);
+                Bukkit.getPluginManager().callEvent(event);
+                if (event.isCancelled()) return true;
+
+                sender.sendMessage(ChatColor.GOLD + "You have allowed " + this.giveName(target) + ChatColor.GOLD + " to live.");
+                revivePlayer(target, 4.0D);
+                corpse.unregister();;
             }
 
             if (!player.getLocation().getWorld().equals(target.getLocation().getWorld())) {
