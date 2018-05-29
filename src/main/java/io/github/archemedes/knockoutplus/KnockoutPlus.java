@@ -264,8 +264,8 @@ public final class KnockoutPlus extends JavaPlugin {
             
             Player killer = koListener.getPlayer(corpse.getKiller());
             if(!(sender instanceof Player) || ( Arrays.stream(args).anyMatch(x->StringUtils.equalsAny(x, "gm","-gm")) && sender.hasPermission("archecore.mod"))) {
-            	if (!corpse.allowedToRevive(sender) && !sender.hasPermission("archecore.admin")) {
-            		sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped by you.");
+            	if (!corpse.allowedToRevive(sender)) {
+            		sender.sendMessage(ChatColor.RED + "You are not permitted to revive " + args[0] + ".");
                 	return true;
             	}
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
@@ -278,12 +278,10 @@ public final class KnockoutPlus extends JavaPlugin {
             }
             
             if(!corpse.allowedToRevive(sender)) { 
-            	sender.sendMessage(ChatColor.RED + "" + args[0] + " cannot be helped by you.");
+            	sender.sendMessage(ChatColor.RED + "You don't know how " + args[0] + " was knocked out, so you can not help them!");
             	return true;
             }
             
-            
-
             player = (Player) sender;
 
             if (corpseRegistry.isKnockedOut(player)) {
