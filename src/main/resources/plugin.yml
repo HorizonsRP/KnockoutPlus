@@ -29,8 +29,9 @@ commands:
       permission: archecore.mod
       usage: /togglerevive [mobs/environment/players/all]
    knockout:
-      description: Main command of KnockoutPlus
+      description: List current KOs and status of flags.
       permission: knockoutplus.knockout
-      aliases: [knockoutplus, kp]
+      aliases: [knockoutplus, kp, ko]
+      sage: /<command> [list/status]
    wcstats:
      description: Stats for war team

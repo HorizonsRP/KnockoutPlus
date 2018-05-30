@@ -67,14 +67,12 @@ public final class KnockoutPlus extends JavaPlugin {
     public void onEnable() {
         worldGuardPlugin = WGBukkit.getPlugin();
         FlagRegistry registry = worldGuardPlugin.getFlagRegistry();
-        try {
+        if (registry.get(PLAYER_KO.getName()) == null) {
             registry.register(PLAYER_KO);
             registry.register(MOB_KO);
             registry.register(OTHER_KO);
-        } catch (FlagConflictException e) {
-            getLogger().severe("There's a flag conflict!");
-        } catch (IllegalStateException e) {
-            getLogger().warning("Failed to register flags. You shouldn't be reloading this plugin!");
+        } else {
+        	this.getLogger().info("Skipping flag registry... is the plugin reloading?");
         }
 
         corpseRegistry = new CorpseRegistry(this);
@@ -91,10 +89,10 @@ public final class KnockoutPlus extends JavaPlugin {
         protectBlocks = getConfig().getBoolean("protect.ko.blocks");
 
         bleedoutAttribute = new ArcheAttribute("Bleedout Time", bleedoutTime);
-        AttributeRegistry.getInstance().register(bleedoutAttribute);
-        
+        if (AttributeRegistry.getInstance().getAttribute(bleedoutAttribute.getName()) == null) AttributeRegistry.getInstance().register(bleedoutAttribute);
         
         protocol = ProtocolLibrary.getProtocolManager();
+        protocol.removePacketListeners(this);
 
         protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
             public void onPacketSending(PacketEvent event) {
@@ -379,18 +377,25 @@ public final class KnockoutPlus extends JavaPlugin {
                     sender.sendMessage(ChatColor.RED + "Usage: /togglerevive [players/mobs/environment]");
                 }
             }
-        } else if (cmd.getName().equalsIgnoreCase("knockout")) {
-            if (args[0].equalsIgnoreCase("list")) {
-                String gr = ChatColor.GRAY + "";
+        } else if (cmd.getLabel().equalsIgnoreCase("knockout")) {
+        	if (args.length < 1) return false;
+            if (args[0].equalsIgnoreCase("list") || args[0].equalsIgnoreCase("l")) {
+                sender.sendMessage(ChatColor.YELLOW + "Current knockouts: ");
+            	String gr = ChatColor.GRAY + "";
                 String it = ChatColor.ITALIC + "";
                 for (Corpse c : corpseRegistry.getCorpses()) {
-                    sender.sendMessage(gr + it + c.getVictim() + gr + " killed by " + it + c.getKiller() + gr + " at " + it + c.getLocation());
+                    sender.sendMessage(gr + it + this.getServer().getOfflinePlayer(c.getVictim()).getName() 
+                    		+ gr + " killed by " + it + this.getServer().getOfflinePlayer(c.getKiller()).getName() 
+                    		+ gr + " at " + it + c.getLocation().getWorld() + ": " + c.getLocation().getBlockX() + ", " + c.getLocation().getBlockY() + ", " + c.getLocation().getBlockZ());
                 }
+                if (corpseRegistry.getCorpses().size() < 1) sender.sendMessage(gr + it + "Nobody");
+                return true;
 
             } else if (args[0].equalsIgnoreCase("status")) {
-                sender.sendMessage("Players: " + playersKO);
-                sender.sendMessage("Mobs: " + mobsKO);
-                sender.sendMessage("Environment: " + nonMobsKO);
+                sender.sendMessage(ChatColor.YELLOW + "Players: " + (playersKO ? ChatColor.GREEN : ChatColor.RED) + playersKO);
+                sender.sendMessage(ChatColor.YELLOW + "Mobs: " + (mobsKO ? ChatColor.GREEN : ChatColor.RED) + mobsKO);
+                sender.sendMessage(ChatColor.YELLOW + "Environment: " + (nonMobsKO ? ChatColor.GREEN : ChatColor.RED) + nonMobsKO);
+                return true;
             }
         }
 
