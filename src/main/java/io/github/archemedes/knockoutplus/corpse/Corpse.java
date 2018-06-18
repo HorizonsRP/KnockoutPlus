@@ -40,12 +40,12 @@ public class Corpse {
 		
 		Persona ps = ArcheCore.getPersona(victim);
 		this.bleedoutTime = ps != null? (long) ps.attributes().getAttributeValue(plugin.getBleedoutAttribute()) : plugin.getBleedoutTime();
-		long distance = (long) (2 * this.bleedoutTime); 
+		long distance = 2 * this.bleedoutTime;
 		
 		allowedRevives = Bukkit.getOnlinePlayers().stream()
 			.filter(p->p.getWorld() == l.getWorld())
-			.filter(p->p.getLocation().distanceSquared(where) < (distance*distance))
-			//.filter(victim::canSee) removing this as a GM watching a combat in vanish may very well have a reason to revive
+			.filter(p->p.getLocation().distance(where) < distance)
+			.filter(victim::canSee)
 			.filter(p-> p != victim)
 			.map(Player::getUniqueId)
 			.collect(Collectors.toSet());

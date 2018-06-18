@@ -11,7 +11,6 @@ import com.google.common.collect.Lists;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
@@ -64,7 +63,8 @@ public final class KnockoutPlus extends JavaPlugin {
     private final StateFlag MOB_KO = new StateFlag("mob-knockout", true);
     private final StateFlag OTHER_KO = new StateFlag("environment-knockout", true);
 
-    public void onEnable() {
+    @Override
+		public void onEnable() {
         worldGuardPlugin = WGBukkit.getPlugin();
         FlagRegistry registry = worldGuardPlugin.getFlagRegistry();
         if (registry.get(PLAYER_KO.getName()) == null) {
@@ -95,7 +95,8 @@ public final class KnockoutPlus extends JavaPlugin {
         protocol.removePacketListeners(this);
 
         protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
-            public void onPacketSending(PacketEvent event) {
+            @Override
+						public void onPacketSending(PacketEvent event) {
                 PacketContainer packet = event.getPacket();
                 final int id = packet.getIntegers().read(0);
 
@@ -115,7 +116,8 @@ public final class KnockoutPlus extends JavaPlugin {
         });
     }
 
-    public void onDisable() {
+    @Override
+		public void onDisable() {
         for (Corpse c : corpseRegistry.getCorpses()) {
             Player p = koListener.getPlayer(c.getVictim());
             p.sendMessage(ChatColor.RED + "An evil entity has condemned you.");
@@ -186,7 +188,8 @@ public final class KnockoutPlus extends JavaPlugin {
         player.getWorld().spawnParticle(org.bukkit.Particle.HEART, player.getLocation(), 1);
     }
 
-    @SuppressWarnings("deprecation")
+    @Override
+		@SuppressWarnings("deprecation")
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("damage")) {
             if (!(sender instanceof Player))
@@ -262,10 +265,6 @@ public final class KnockoutPlus extends JavaPlugin {
             
             Player killer = koListener.getPlayer(corpse.getKiller());
             if(!(sender instanceof Player) || ( Arrays.stream(args).anyMatch(x->StringUtils.equalsAny(x, "gm","-gm")) && sender.hasPermission("archecore.mod"))) {
-            	if (!corpse.allowedToRevive(sender)) {
-            		sender.sendMessage(ChatColor.RED + "You are not permitted to revive " + args[0] + ".");
-                	return true;
-            	}
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
@@ -275,7 +274,7 @@ public final class KnockoutPlus extends JavaPlugin {
                 return true;
             }
             
-            if(!corpse.allowedToRevive(sender)) { 
+            if(!corpse.allowedToRevive(sender)) {
             	sender.sendMessage(ChatColor.RED + "You don't know how " + args[0] + " was knocked out, so you can not help them!");
             	return true;
             }
@@ -384,8 +383,8 @@ public final class KnockoutPlus extends JavaPlugin {
             	String gr = ChatColor.GRAY + "";
                 String it = ChatColor.ITALIC + "";
                 for (Corpse c : corpseRegistry.getCorpses()) {
-                    sender.sendMessage(gr + it + this.getServer().getOfflinePlayer(c.getVictim()).getName() 
-                    		+ gr + " killed by " + it + this.getServer().getOfflinePlayer(c.getKiller()).getName() 
+                    sender.sendMessage(gr + it + this.getServer().getOfflinePlayer(c.getVictim()).getName()
+                    		+ gr + " killed by " + it + this.getServer().getOfflinePlayer(c.getKiller()).getName()
                     		+ gr + " at " + it + c.getLocation().getWorld() + ": " + c.getLocation().getBlockX() + ", " + c.getLocation().getBlockY() + ", " + c.getLocation().getBlockZ());
                 }
                 if (corpseRegistry.getCorpses().size() < 1) sender.sendMessage(gr + it + "Nobody");
