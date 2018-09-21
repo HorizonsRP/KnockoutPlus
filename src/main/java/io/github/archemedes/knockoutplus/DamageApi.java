@@ -9,6 +9,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+/**
+ * @deprecated I'm unsure if anyone uses this so I'm going to deprecate instead of removing it
+ */
+@Deprecated
 public class DamageApi {
     public double getDamage(LivingEntity target, double rawDamage, EntityDamageEvent.DamageCause cause) {
         if (rawDamage <= 0.0D) return 0.0D;
@@ -155,18 +159,18 @@ public class DamageApi {
         Material mat = armor.getType();
 
         if ((mat == Material.LEATHER_HELMET) || (mat == Material.LEATHER_BOOTS) ||
-                (mat == Material.GOLD_BOOTS) || (mat == Material.CHAINMAIL_BOOTS))
+                (mat == Material.GOLDEN_BOOTS) || (mat == Material.CHAINMAIL_BOOTS))
             return 1;
-        if ((mat == Material.LEATHER_LEGGINGS) || (mat == Material.GOLD_HELMET) ||
+        if ((mat == Material.LEATHER_LEGGINGS) || (mat == Material.GOLDEN_HELMET) ||
                 (mat == Material.CHAINMAIL_HELMET) || (mat == Material.IRON_HELMET) ||
                 (mat == Material.IRON_BOOTS) || (mat == Material.ELYTRA))
             return 2;
-        if ((mat == Material.LEATHER_CHESTPLATE) || (mat == Material.GOLD_LEGGINGS) ||
+        if ((mat == Material.LEATHER_CHESTPLATE) || (mat == Material.GOLDEN_LEGGINGS) ||
                 (mat == Material.DIAMOND_BOOTS) || (mat == Material.DIAMOND_HELMET))
             return 3;
         if (mat == Material.CHAINMAIL_LEGGINGS)
             return 4;
-        if ((mat == Material.GOLD_CHESTPLATE) || (mat == Material.CHAINMAIL_CHESTPLATE) || (mat == Material.IRON_LEGGINGS))
+        if ((mat == Material.GOLDEN_CHESTPLATE) || (mat == Material.CHAINMAIL_CHESTPLATE) || (mat == Material.IRON_LEGGINGS))
             return 5;
         if ((mat == Material.IRON_CHESTPLATE) || (mat == Material.DIAMOND_LEGGINGS))
             return 6;

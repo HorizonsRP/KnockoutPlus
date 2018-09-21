@@ -1,6 +1,7 @@
 package io.github.archemedes.knockoutplus;
 
 import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
@@ -8,7 +9,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
-import com.sk89q.worldguard.bukkit.WGBukkit;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
@@ -16,19 +17,27 @@ import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import lombok.Getter;
 import net.lordofthecraft.arche.attributes.ArcheAttribute;
 import net.lordofthecraft.arche.attributes.AttributeRegistry;
-import net.minecraft.server.v1_12_R1.PacketPlayOutEntity;
-
 import org.apache.commons.lang3.StringUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -38,12 +47,9 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-
 @Getter
 public final class KnockoutPlus extends JavaPlugin {
-		private ArcheAttribute bleedoutAttribute;
+    private ArcheAttribute bleedoutAttribute;
 	
     public int bleedoutTime;
     public boolean mobsUntarget;
@@ -54,7 +60,7 @@ public final class KnockoutPlus extends JavaPlugin {
     private Map<UUID, Long> recentKos = new HashMap<>();
     private ProtocolManager protocol;
 
-    private WorldGuardPlugin worldGuardPlugin;
+    WorldGuardPlugin wgPlugin;
     private CorpseRegistry corpseRegistry;
     private KOListener koListener;
     private BukkitTask bleedoutTask;
@@ -65,8 +71,8 @@ public final class KnockoutPlus extends JavaPlugin {
 
     @Override
 		public void onEnable() {
-        worldGuardPlugin = WGBukkit.getPlugin();
-        FlagRegistry registry = worldGuardPlugin.getFlagRegistry();
+        wgPlugin = WorldGuardPlugin.inst();
+        FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
         if (registry.get(PLAYER_KO.getName()) == null) {
             registry.register(PLAYER_KO);
             registry.register(MOB_KO);
@@ -96,7 +102,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
         protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
             @Override
-						public void onPacketSending(PacketEvent event) {
+            public void onPacketSending(PacketEvent event) {
                 PacketContainer packet = event.getPacket();
                 final int id = packet.getIntegers().read(0);
 
@@ -130,43 +136,42 @@ public final class KnockoutPlus extends JavaPlugin {
     }
 
 
-    @SuppressWarnings("deprecation")
     public void removePlayer(Player p) {
         Corpse c = corpseRegistry.getCorpse(p);
         Location l = c.getLocation();
-        p.sendBlockChange(l, l.getBlock().getType(), l.getBlock().getData());
+        p.sendBlockChange(l, l.getBlock().getBlockData());
     }
 
     boolean wasRecentlyKnockedOut(Player p) {
         UUID u = p.getUniqueId();
         if (recentKos.containsKey(u)) {
             long time = System.currentTimeMillis();
-            if (time < recentKos.get(u) + 600000L) return true;
+            return time < recentKos.get(u) + 600000L;
         }
 
         return false;
     }
 
-    @SuppressWarnings("deprecation")
     void wake(Player v, Location l, boolean updateBlock) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
         packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
         protocol.broadcastServerPacket(packet, v, true);
+
         if (updateBlock) {
             for (Player t : v.getWorld().getPlayers()) {
-                t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK, (byte) 0);
+                t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK.createBlockData());
             }
         }
 
     }
 
-    @SuppressWarnings("deprecation")
     public void wakeOne(Player v) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
         packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
         Location l = v.getLocation();
+
         try {
-            v.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK, (byte) 0);
+            v.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK.createBlockData());
             protocol.sendServerPacket(v, packet);
         } catch (InvocationTargetException e) {
             e.printStackTrace();
@@ -182,14 +187,13 @@ public final class KnockoutPlus extends JavaPlugin {
         player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 400, 1, true), true);
 
         Location l = player.getLocation();
-        if (l.getBlock().getType().equals(Material.WATER) || l.getBlock().getType().equals(Material.STATIONARY_WATER)) { //adds waterbreathing if player dies in water
+        if (l.getBlock().isLiquid()) { //adds water breathing if player dies in some form of liquid
         	player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 400, 100));
         }
         player.getWorld().spawnParticle(org.bukkit.Particle.HEART, player.getLocation(), 1);
     }
 
     @Override
-		@SuppressWarnings("deprecation")
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("damage")) {
             if (!(sender instanceof Player))
@@ -264,7 +268,8 @@ public final class KnockoutPlus extends JavaPlugin {
             final Corpse corpse = corpseRegistry.getCorpse(target);
             
             Player killer = koListener.getPlayer(corpse.getKiller());
-            if(!(sender instanceof Player) || ( Arrays.stream(args).anyMatch(x->StringUtils.equalsAny(x, "gm","-gm")) && sender.hasPermission("archecore.mod"))) {
+            if(!(sender instanceof Player)
+                || ( Arrays.stream(args).anyMatch(x-> StringUtils.equalsAny(x, "gm", "-gm")) && sender.hasPermission("archecore.mod"))) {
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
@@ -314,7 +319,7 @@ public final class KnockoutPlus extends JavaPlugin {
                 return true;
             }
 
-            player.getWorld().playSound(player.getLocation(), Sound.BLOCK_CLOTH_BREAK, 3.5F, -1.0F);
+            player.getWorld().playSound(player.getLocation(), Sound.BLOCK_WOOL_BREAK, 3.5F, -1.0F);
             player.sendMessage(ChatColor.YELLOW + "You bend down to try and assist " + giveName(target));
             player.sendMessage(String.valueOf(ChatColor.GRAY) + ChatColor.BOLD + "(Hold still or your action will be interrupted.)");
             target.sendMessage(ChatColor.YELLOW + "You are being assisted by " + giveName(player));
@@ -492,20 +497,31 @@ public final class KnockoutPlus extends JavaPlugin {
         return l;
     }
 
-    @SuppressWarnings("deprecation")
     private void sendBedPacket(Player p, Location l, List<Player> targets) {
         for (Player t : targets) {
-            t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BED_BLOCK, (byte) 0);
+            t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BLACK_BED.createBlockData());
         }
 
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.BED);
         packet.getIntegers().write(0, p.getEntityId());
         packet.getBlockPositionModifier().write(0, new BlockPosition(l.getBlockX(), 0, l.getBlockZ()));
         protocol.broadcastServerPacket(packet);
-        final PacketPlayOutEntity.PacketPlayOutRelEntityMove move = new PacketPlayOutEntity.PacketPlayOutRelEntityMove(p.getEntityId(), (byte) 0, (byte) (l.getBlockY() + 1), (byte) 0, false);
+
+        PacketContainer movePacket = new PacketContainer(Server.REL_ENTITY_MOVE);
+        movePacket.getIntegers().write(0, p.getEntityId());
+        movePacket.getIntegers().write(0,  0);
+        movePacket.getIntegers().write(0,  l.getBlockY() + 1);
+        movePacket.getIntegers().write(0,  0);
+        movePacket.getBooleans().write(0,  false);
+
         for (Player t : targets) {
-            if (p != t)
-                ((CraftPlayer) t).getHandle().playerConnection.sendPacket(move);
+            if (p != t) {
+                try {
+                    protocol.sendServerPacket(p, packet);
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -517,8 +533,8 @@ public final class KnockoutPlus extends JavaPlugin {
         return this.corpseRegistry;
     }
 
-    public WorldGuardPlugin getWorldGuardPlugin(){
-        return this.worldGuardPlugin;
+    public WorldGuardPlugin getWgPlugin(){
+        return this.wgPlugin;
     }
 
     public StateFlag getOTHER_KO(){
