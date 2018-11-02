@@ -44,7 +44,7 @@ public class Corpse {
 		
 		allowedRevives = Bukkit.getOnlinePlayers().stream()
 			.filter(p->p.getWorld() == l.getWorld())
-			.filter(p->p.getLocation().distance(where) < distance)
+			.filter(p->p.getLocation().distanceSquared(where) < distance * distance)
 			.filter(victim::canSee)
 			.filter(p-> p != victim)
 			.map(Player::getUniqueId)

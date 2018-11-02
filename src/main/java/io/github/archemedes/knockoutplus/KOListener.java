@@ -359,12 +359,8 @@ public class KOListener implements Listener {
 
                 verdictDelay.add(p.getUniqueId());
 
-                Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
-                            public void run() {
-                                plugin.getKoListener().verdictDelay.remove(p.getUniqueId());
-                            }
-                        }
-                        , 25L);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> plugin.getKoListener().verdictDelay.remove(p.getUniqueId())
+                    , 25L);
 
                 if ((e.getAction() == Action.LEFT_CLICK_BLOCK) || (e.getAction() == Action.LEFT_CLICK_AIR)) {
                     announceKill(p, v);
@@ -422,7 +418,7 @@ public class KOListener implements Listener {
             Bukkit.getScheduler().cancelTask(taskId);
             if (p.hasPotionEffect(PotionEffectType.SLOW_DIGGING))
                 p.removePotionEffect(PotionEffectType.SLOW_DIGGING);
-            p.sendMessage(ChatColor.RED + "Your have been interrupted!");
+            p.sendMessage(ChatColor.RED + "You have been interrupted!");
         }
     }
 
