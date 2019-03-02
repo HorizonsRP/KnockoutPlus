@@ -94,7 +94,7 @@ public final class KnockoutPlus extends JavaPlugin {
         nonMobsKO = getConfig().getBoolean("nonmobs.cause.knockout");
         protectBlocks = getConfig().getBoolean("protect.ko.blocks");
 
-        bleedoutAttribute = new ArcheAttribute("Bleedout Time", bleedoutTime);
+        bleedoutAttribute = new ArcheAttribute("bleedout-time", bleedoutTime);
         if (AttributeRegistry.getInstance().getAttribute(bleedoutAttribute.getName()) == null) AttributeRegistry.getInstance().register(bleedoutAttribute);
         
         protocol = ProtocolLibrary.getProtocolManager();
