@@ -4,13 +4,17 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import io.github.archemedes.knockoutplus.KnockoutPlus;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
-
-import java.util.*;
 
 @Getter
 public class CorpseRegistry {
@@ -50,7 +54,8 @@ public class CorpseRegistry {
                 PlayerReviveEvent event = new PlayerReviveEvent(null, p, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
-                    plugin.revivePlayer(p, p.getMaxHealth());
+                    plugin.revivePlayer(p, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+
                     p.sendMessage(ChatColor.GOLD + "An Aengul smiles upon you.");
                     iter.remove();
                     UUID killer = c.getKiller();

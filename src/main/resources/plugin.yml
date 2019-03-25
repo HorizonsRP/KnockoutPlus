@@ -5,6 +5,7 @@ version: ${project.version}
 load: STARTUP
 depend: [ProtocolLib, WorldGuard]
 authors: [Arche, Kowaman]
+api-version: 1.13
 
 commands:
    revive:

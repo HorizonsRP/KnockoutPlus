@@ -1,10 +1,17 @@
 package io.github.archemedes.knockoutplus;
 
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import io.github.archemedes.knockoutplus.corpse.Corpse;
+import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
+import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.UUID;
-
+import net.lordofthecraft.betterteams.Affixes;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -34,17 +41,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.bukkit.RegionContainer;
-import com.sk89q.worldguard.bukkit.RegionQuery;
-import com.sk89q.worldguard.bukkit.WGBukkit;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-
-import io.github.archemedes.knockoutplus.corpse.Corpse;
-import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
-import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
-import net.lordofthecraft.betterteams.Affixes;
 
 public class KOListener implements Listener {
     ArrayList<UUID> verdictDelay = new ArrayList<>();
@@ -156,7 +152,8 @@ public class KOListener implements Listener {
         }
 
         if (plugin.wasRecentlyKnockedOut(p)) return;
-        if (!plugin.nonMobsKO && !(getSet(p.getLocation()).testState(plugin.getWorldGuardPlugin().wrapPlayer(p), plugin.getOTHER_KO())))
+        LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
+        if (!plugin.nonMobsKO && !(getSet(lp).testState(plugin.getWgPlugin().wrapPlayer(p), plugin.getOTHER_KO())))
             return;
 
         if ((e.getCause() == EntityDamageEvent.DamageCause.LAVA) || (e.getCause() == EntityDamageEvent.DamageCause.WITHER)) {
@@ -186,8 +183,8 @@ public class KOListener implements Listener {
     private boolean holdingTotem(Player p) {
     	PlayerInventory i = p.getInventory();
     	
-    	return i.getItemInMainHand().getType() == Material.TOTEM 
-    			|| i.getItemInOffHand().getType() == Material.TOTEM;
+    	return i.getItemInMainHand().getType() == Material.TOTEM_OF_UNDYING
+    			|| i.getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING;
     }
     
     @EventHandler
@@ -208,8 +205,9 @@ public class KOListener implements Listener {
     	if (!(e.getEntity() instanceof Player)) return;
     	 Entity killer = e.getDamager();
     	 Player p = (Player) e.getEntity();
-    	 LocalPlayer lp = WGBukkit.getPlugin().wrapPlayer(p);
-    	 ApplicableRegionSet set = getSet(p.getLocation());
+    	 LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
+    	 ApplicableRegionSet set = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery().getApplicableRegions(lp.getLocation());
+
          if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
              if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
                  Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
@@ -219,11 +217,9 @@ public class KOListener implements Listener {
                      if (pa.getStatus().equals(ka.getStatus())) {
                          e.setCancelled(true);
                          k.sendMessage(ChatColor.RED + "You may not damage a player with the same status as yourself.");
-                         return;
                      }
                  }
              }
-             return;
          }
     	
     }
@@ -248,8 +244,8 @@ public class KOListener implements Listener {
             return;
         }
         
-        LocalPlayer lp = WGBukkit.getPlugin().wrapPlayer(p);
-        ApplicableRegionSet set = getSet(p.getLocation());
+        LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
+        ApplicableRegionSet set = getSet(lp);
         Entity killer = e.getDamager();
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
             if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
@@ -363,12 +359,8 @@ public class KOListener implements Listener {
 
                 verdictDelay.add(p.getUniqueId());
 
-                Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
-                            public void run() {
-                                plugin.getKoListener().verdictDelay.remove(p.getUniqueId());
-                            }
-                        }
-                        , 25L);
+                Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> plugin.getKoListener().verdictDelay.remove(p.getUniqueId())
+                    , 25L);
 
                 if ((e.getAction() == Action.LEFT_CLICK_BLOCK) || (e.getAction() == Action.LEFT_CLICK_AIR)) {
                     announceKill(p, v);
@@ -426,7 +418,7 @@ public class KOListener implements Listener {
             Bukkit.getScheduler().cancelTask(taskId);
             if (p.hasPotionEffect(PotionEffectType.SLOW_DIGGING))
                 p.removePotionEffect(PotionEffectType.SLOW_DIGGING);
-            p.sendMessage(ChatColor.RED + "Your have been interrupted!");
+            p.sendMessage(ChatColor.RED + "You have been interrupted!");
         }
     }
 
@@ -514,11 +506,8 @@ public class KOListener implements Listener {
         }
     }
 
-    private ApplicableRegionSet getSet(Location l) {
-        RegionContainer cont = WGBukkit.getPlugin().getRegionContainer();
-        RegionQuery query = cont.createQuery();
-        return query.getApplicableRegions(l);
+
+    private ApplicableRegionSet getSet(LocalPlayer player) {
+        return WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery().getApplicableRegions(player.getLocation());
     }
-
-
 }
