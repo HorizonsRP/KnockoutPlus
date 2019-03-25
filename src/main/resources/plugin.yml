@@ -1,4 +1,4 @@
-name: Knockout-Plus
+name: KnockoutPlus
 main: io.github.archemedes.knockoutplus.KnockoutPlus
 description: This plugin puts the 'cute' back in execute. Fight to the death or friendly brawl? The choice is yours. 
 version: ${project.version}
