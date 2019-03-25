@@ -461,7 +461,7 @@ public final class KnockoutPlus extends JavaPlugin {
         if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
             DataWrapper wrapper = DataWrapper.createNew();
             wrapper.set(TARGET, player.getName());
-            OEntry.create().source(killer).customWithLocation("revive", wrapper, player.getLocation()).save();
+            OEntry.create().source(killer).customWithLocation("down", wrapper, player.getLocation()).save();
         }
     }
 
