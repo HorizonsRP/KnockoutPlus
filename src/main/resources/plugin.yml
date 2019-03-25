@@ -4,6 +4,7 @@ description: This plugin puts the 'cute' back in execute. Fight to the death or 
 version: ${project.version}
 load: STARTUP
 depend: [ProtocolLib, WorldGuard]
+softdepend: [Omniscience]
 authors: [Arche, Kowaman]
 api-version: 1.13
 

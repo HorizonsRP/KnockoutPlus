@@ -175,7 +175,7 @@ public class KOListener implements Listener {
         }
         double trueDamage = e.getFinalDamage();
         if (trueDamage >= p.getHealth() - 0.1D) {
-            this.plugin.koPlayer(p);
+            this.plugin.koPlayer(p, null); // Passing null here to indicate environmental death
             e.setCancelled(true);
         }
     }
@@ -258,7 +258,7 @@ public class KOListener implements Listener {
         
         if (!holdingTotem(p) && plugin.mobsKO && set.testState(lp, plugin.getMOB_KO())) {
             e.setCancelled(true);
-            this.plugin.koPlayer(p);
+            this.plugin.koPlayer(p, e.getDamager());
         }
     }
 
@@ -403,7 +403,7 @@ public class KOListener implements Listener {
                 if (event.isCancelled()) return;
 
                 p.sendMessage(ChatColor.GOLD + "You have allowed " + this.plugin.giveName(v) + ChatColor.GOLD + " to live.");
-                plugin.revivePlayer(v, 4.0D);
+                plugin.revivePlayer(v, p, 4.0D);
                 c.unregister();
 
                 break;

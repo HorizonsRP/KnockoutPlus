@@ -14,6 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 @Getter
@@ -43,7 +44,7 @@ public class CorpseRegistry {
         return c;
     }
 
-    public void reviveAll() {
+    public void reviveAll(CommandSender sender) {
         Iterator iter = victims.entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
@@ -54,7 +55,7 @@ public class CorpseRegistry {
                 PlayerReviveEvent event = new PlayerReviveEvent(null, p, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
-                    plugin.revivePlayer(p, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                    plugin.revivePlayer(p, sender, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 
                     p.sendMessage(ChatColor.GOLD + "An Aengul smiles upon you.");
                     iter.remove();

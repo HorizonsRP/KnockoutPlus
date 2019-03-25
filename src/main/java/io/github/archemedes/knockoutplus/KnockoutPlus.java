@@ -1,5 +1,7 @@
 package io.github.archemedes.knockoutplus;
 
+import static net.lordofthecraft.omniscience.api.data.DataKeys.TARGET;
+
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -26,6 +28,9 @@ import java.util.UUID;
 import lombok.Getter;
 import net.lordofthecraft.arche.attributes.ArcheAttribute;
 import net.lordofthecraft.arche.attributes.AttributeRegistry;
+import net.lordofthecraft.omniscience.api.OmniApi;
+import net.lordofthecraft.omniscience.api.data.DataWrapper;
+import net.lordofthecraft.omniscience.api.entry.OEntry;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -39,6 +44,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Creature;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -80,6 +86,9 @@ public final class KnockoutPlus extends JavaPlugin {
         } else {
         	this.getLogger().info("Skipping flag registry... is the plugin reloading?");
         }
+
+        OmniApi.registerEvent("down", "downed");
+        OmniApi.registerEvent("revive", "revived");
 
         corpseRegistry = new CorpseRegistry(this);
         koListener = new KOListener(this);
@@ -178,7 +187,13 @@ public final class KnockoutPlus extends JavaPlugin {
         }
     }
 
-    public void revivePlayer(Player player, double hp) {
+    /**
+     * Revived a player from the knockdown state
+     * @param player Player being revived
+     * @param helper Person doing the reviving
+     * @param hp Amount of health to revive the player with
+     */
+    public void revivePlayer(Player player, CommandSender helper, double hp) {
         wake(player, player.getLocation(), true);
         removePlayer(player);
 
@@ -191,6 +206,12 @@ public final class KnockoutPlus extends JavaPlugin {
         	player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 400, 100));
         }
         player.getWorld().spawnParticle(org.bukkit.Particle.HEART, player.getLocation(), 1);
+
+        if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
+            DataWrapper wrapper = DataWrapper.createNew();
+            wrapper.set(TARGET, player.getName());
+            OEntry.create().source(helper).customWithLocation("revive", wrapper, player.getLocation()).save();
+        }
     }
 
     @Override
@@ -273,7 +294,7 @@ public final class KnockoutPlus extends JavaPlugin {
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
-                    revivePlayer(target, 4.0D);
+                    revivePlayer(target, sender, 4.0D);
                     corpse.unregister();
                 }
                 return true;
@@ -302,8 +323,8 @@ public final class KnockoutPlus extends JavaPlugin {
                 if (event.isCancelled()) return true;
 
                 sender.sendMessage(ChatColor.GOLD + "You have allowed " + this.giveName(target) + ChatColor.GOLD + " to live.");
-                revivePlayer(target, 4.0D);
-                corpse.unregister();;
+                revivePlayer(target, sender, 4.0D);
+                corpse.unregister();
             }
 
             if (!player.getLocation().getWorld().equals(target.getLocation().getWorld())) {
@@ -343,7 +364,7 @@ public final class KnockoutPlus extends JavaPlugin {
                                 target.sendMessage(ChatColor.GOLD + "You have been saved, but you still feel weak");
                                 target.sendMessage(ChatColor.DARK_RED + "Caution: Being incapacitated again shall mean your demise.");
 
-                                revivePlayer(target, 4.0D);
+                                revivePlayer(target, sender, 4.0D);
                                 corpse.unregister();
 
                                 recentKos.put(target.getUniqueId(), System.currentTimeMillis());
@@ -357,7 +378,7 @@ public final class KnockoutPlus extends JavaPlugin {
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("reviveall")) {
-            if ((sender.hasPermission("nexus.moderator")) || (!(sender instanceof Player))) corpseRegistry.reviveAll();
+            if ((sender.hasPermission("nexus.moderator")) || (!(sender instanceof Player))) corpseRegistry.reviveAll(sender);
             else
                 sender.sendMessage(ChatColor.RED + "You do not have permission to use this!");
             return true;
@@ -365,13 +386,13 @@ public final class KnockoutPlus extends JavaPlugin {
             if ((args.length == 1) && ((sender.hasPermission("nexus.moderator")))) {
                 if (args[0].equalsIgnoreCase("players")) {
                     playersKO = !playersKO;
-                    sender.sendMessage("Player knockout toggled to: " + ChatColor.AQUA + String.valueOf(nonMobsKO));
+                    sender.sendMessage("Player knockout toggled to: " + ChatColor.AQUA + nonMobsKO);
                 } else if (args[0].equalsIgnoreCase("mobs")) {
                     mobsKO = !mobsKO;
-                    sender.sendMessage("Mob knockout toggled to: " + ChatColor.AQUA + String.valueOf(nonMobsKO));
+                    sender.sendMessage("Mob knockout toggled to: " + ChatColor.AQUA + nonMobsKO);
                 } else if (args[0].equalsIgnoreCase("environment")) {
                     nonMobsKO = !nonMobsKO;
-                    sender.sendMessage("Environment knockout toggled to: " + ChatColor.AQUA + String.valueOf(nonMobsKO));
+                    sender.sendMessage("Environment knockout toggled to: " + ChatColor.AQUA + nonMobsKO);
                 } else if (args[0].equalsIgnoreCase("all")) {
                     playersKO = !playersKO;
                     mobsKO = !mobsKO;
@@ -406,7 +427,7 @@ public final class KnockoutPlus extends JavaPlugin {
         return false;
     }
 
-    void koPlayer(Player p) {
+    void koPlayer(Player p, Entity killer) {
         p.sendMessage(ChatColor.RED + "You have been knocked out and will die if not aided!");
         p.sendMessage(String.valueOf(ChatColor.DARK_GREEN));
 
@@ -416,22 +437,32 @@ public final class KnockoutPlus extends JavaPlugin {
         Location l = layPlayerDown(p);
         corpseRegistry.register(p, l);
         if (mobsUntarget) stopTarget(p);
+        logKill(p, killer);
     }
 
-    void koPlayer(Player p, final Player k) {
-        p.sendMessage(ChatColor.RED + "You were defeated by " + ChatColor.BOLD + k.getDisplayName());
+    void koPlayer(Player p, final Player killer) {
+        p.sendMessage(ChatColor.RED + "You were defeated by " + ChatColor.BOLD + killer.getDisplayName());
 
-        k.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
-        k.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
+        killer.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
+        killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
 
-        koListener.verdictDelay.add(k.getUniqueId());
-        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> koListener.verdictDelay.remove(k.getUniqueId())
+        koListener.verdictDelay.add(killer.getUniqueId());
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> koListener.verdictDelay.remove(killer.getUniqueId())
                 , 50L);
 
         if (mobsUntarget) stopTarget(p);
         Location l = layPlayerDown(p);
 
-        corpseRegistry.register(p, k, l);
+        corpseRegistry.register(p, killer, l);
+        logKill(p, killer);
+    }
+
+    private void logKill(Player player, Entity killer) {
+        if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
+            DataWrapper wrapper = DataWrapper.createNew();
+            wrapper.set(TARGET, player.getName());
+            OEntry.create().source(killer).customWithLocation("revive", wrapper, player.getLocation()).save();
+        }
     }
 
     private void stopTarget(Player p) {

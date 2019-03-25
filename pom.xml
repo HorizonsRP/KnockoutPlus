@@ -73,14 +73,14 @@
             <artifactId>worldedit-bukkit</artifactId>
             <version>7.0.0-SNAPSHOT</version>
             <scope>provided</scope>
-            <!-- This is required because sk89's repo doesn't have all the required dependencies
-                 So we use a hack of uploading the fully shaded jar on to the LoTC repo and use that
-                 instead.
-             -->
             <exclusions>
                 <exclusion>
+                    <groupId>org.bukkit</groupId>
+                    <artifactId>bukkit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bstats.bStats-Metrics</groupId>
                     <artifactId>*</artifactId>
-                    <groupId>*</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -103,7 +103,12 @@
         <dependency>
         	<groupId>net.lordofthecraft.arche</groupId>
         	<artifactId>ArcheCore</artifactId>
-        	<version>2.7</version>
+        	<version>3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>net.lordofthecraft</groupId>
+            <artifactId>OmniscienceAPI</artifactId>
+            <version>1.0.2</version>
         </dependency>
     </dependencies>
 
