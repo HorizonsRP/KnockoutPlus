@@ -1,7 +1,5 @@
 package io.github.archemedes.knockoutplus;
 
-import static net.lordofthecraft.omniscience.api.data.DataKeys.TARGET;
-
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -19,12 +17,6 @@ import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import lombok.Getter;
 import net.lordofthecraft.arche.attributes.ArcheAttribute;
 import net.lordofthecraft.arche.attributes.AttributeRegistry;
@@ -32,12 +24,7 @@ import net.lordofthecraft.omniscience.api.OmniApi;
 import net.lordofthecraft.omniscience.api.data.DataWrapper;
 import net.lordofthecraft.omniscience.api.entry.OEntry;
 import org.apache.commons.lang3.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -52,6 +39,11 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+
+import static net.lordofthecraft.omniscience.api.data.DataKeys.TARGET;
 
 @Getter
 public final class KnockoutPlus extends JavaPlugin {
@@ -76,16 +68,20 @@ public final class KnockoutPlus extends JavaPlugin {
     private final StateFlag OTHER_KO = new StateFlag("environment-knockout", true);
 
     @Override
-		public void onEnable() {
-        wgPlugin = WorldGuardPlugin.inst();
+    public void onLoad() {
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
         if (registry.get(PLAYER_KO.getName()) == null) {
             registry.register(PLAYER_KO);
             registry.register(MOB_KO);
             registry.register(OTHER_KO);
         } else {
-        	this.getLogger().info("Skipping flag registry... is the plugin reloading?");
+            this.getLogger().info("Skipping flag registry... is the plugin reloading?");
         }
+    }
+
+    @Override
+		public void onEnable() {
+        wgPlugin = WorldGuardPlugin.inst();
 
         OmniApi.registerEvent("down", "downed");
         OmniApi.registerEvent("revive", "revived");
