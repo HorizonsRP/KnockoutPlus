@@ -423,6 +423,19 @@ public final class KnockoutPlus extends JavaPlugin {
         return false;
     }
 
+    void koPlayer(Player p) {
+        p.sendMessage(ChatColor.RED + "You have been knocked out and will die if not aided!");
+        p.sendMessage(String.valueOf(ChatColor.DARK_GREEN));
+
+        if (p.getFoodLevel() < 3) {
+            p.setFoodLevel(3);
+        }
+        Location l = layPlayerDown(p);
+        corpseRegistry.register(p, l);
+        if (mobsUntarget) stopTarget(p);
+        logKill(p, null);
+    }
+
     void koPlayer(Player p, Entity killer) {
         p.sendMessage(ChatColor.RED + "You have been knocked out and will die if not aided!");
         p.sendMessage(String.valueOf(ChatColor.DARK_GREEN));
