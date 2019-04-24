@@ -11,7 +11,6 @@ import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
 import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import io.github.archemedes.knockoutplus.commands.ReviveCommand;
@@ -50,6 +49,8 @@ import static net.lordofthecraft.omniscience.api.data.DataKeys.TARGET;
 
 @Getter
 public final class KnockoutPlus extends JavaPlugin {
+    private static KnockoutPlus INSTANCE;
+
     private ArcheAttribute bleedoutAttribute;
 	
     public int bleedoutTime;
@@ -61,7 +62,6 @@ public final class KnockoutPlus extends JavaPlugin {
     private Map<UUID, Long> recentKos = new HashMap<>();
     private ProtocolManager protocol;
 
-    WorldGuardPlugin wgPlugin;
     private CorpseRegistry corpseRegistry;
     private KOListener koListener;
     private BukkitTask bleedoutTask;
@@ -72,6 +72,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        INSTANCE = this;
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
         if (registry.get(PLAYER_KO.getName()) == null) {
             registry.register(PLAYER_KO);
@@ -143,6 +144,10 @@ public final class KnockoutPlus extends JavaPlugin {
         bleedoutTask.cancel();
     }
 
+
+    public static KnockoutPlus get() {
+        return INSTANCE;
+    }
 
     public void removePlayer(Player p) {
         Corpse c = corpseRegistry.getCorpse(p);
@@ -467,22 +472,6 @@ public final class KnockoutPlus extends JavaPlugin {
 
     public CorpseRegistry getCorpseRegistry(){
         return this.corpseRegistry;
-    }
-
-    public WorldGuardPlugin getWgPlugin(){
-        return this.wgPlugin;
-    }
-
-    public StateFlag getOTHER_KO(){
-        return this.OTHER_KO;
-    }
-
-    public StateFlag getPLAYER_KO(){
-        return this.PLAYER_KO;
-    }
-
-    public StateFlag getMOB_KO(){
-        return this.MOB_KO;
     }
 
     public Map<UUID,Long> getRecentKos(){
