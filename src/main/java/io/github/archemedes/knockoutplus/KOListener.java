@@ -45,7 +45,7 @@ import java.util.UUID;
 
 public class KOListener implements Listener {
     ArrayList<UUID> verdictDelay = new ArrayList<>();
-    HashMap<UUID, Integer> chants = new HashMap<>();
+    public HashMap<UUID, Integer> chants = new HashMap<>();
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
