@@ -121,6 +121,11 @@
             <artifactId>OmniscienceAPI</artifactId>
             <version>1.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>co.lotc</groupId>
+            <artifactId>tythan-bukkit</artifactId>
+            <version>0.3</version>
+        </dependency>
     </dependencies>
 
     <build>
