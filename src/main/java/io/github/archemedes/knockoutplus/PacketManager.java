@@ -2,31 +2,31 @@ package io.github.archemedes.knockoutplus;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.BlockPosition;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import net.minecraft.server.v1_14_R1.BlockPosition;
+import net.minecraft.server.v1_14_R1.EntityPose;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+
+import java.util.Optional;
 
 public class PacketManager {
 
 	public static void layDown(Player player) {
+		Location location = player.getLocation();
 
 		PacketContainer sleepPacket = new PacketContainer(PacketType.Play.Server.ENTITY_METADATA);
+
 		sleepPacket.getIntegers().write(0, player.getEntityId());
 
-		WrappedDataWatcher poseWatcher = new WrappedDataWatcher();
-		poseWatcher.setEntity(player);
-		poseWatcher.setObject(0, WrappedDataWatcher.Registry.get(byte.class),6 );
-		poseWatcher.setObject(1, WrappedDataWatcher.Registry.get(int.class), 18);
-		poseWatcher.setObject(2, WrappedDataWatcher.Registry.get(int.class), 2);
+		WrappedDataWatcher watcher = new WrappedDataWatcher();
+		watcher.setEntity(player);
 
-		WrappedDataWatcher bedWatcher = new WrappedDataWatcher();
-		poseWatcher.setEntity(player);
-		poseWatcher.setObject(0, WrappedDataWatcher.Registry.get(byte.class),12 );
-		poseWatcher.setObject(1, WrappedDataWatcher.Registry.get(int.class), 10);
-		poseWatcher.setObject(2, WrappedDataWatcher.Registry.get(BlockPosition.class), new BlockPosition(player.getLocation().toVector()));
 
-		sleepPacket.getWatchableCollectionModifier().write(0, poseWatcher.getWatchableObjects());
-		sleepPacket.getWatchableCollectionModifier().write(1, bedWatcher.getWatchableObjects());
+		watcher.setObject(6, WrappedDataWatcher.Registry.get(EntityPose.class), EntityPose.SLEEPING);
+		watcher.setObject(12, WrappedDataWatcher.Registry.get(BlockPosition.class, true), Optional.of(new BlockPosition(location.getBlockX(), location.getBlockY() - 3, location.getBlockZ())));
+
+		sleepPacket.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 
 		KnockoutPlus.get().getProtocolManager().broadcastServerPacket(sleepPacket);
 	}
@@ -35,13 +35,11 @@ public class PacketManager {
 		PacketContainer sleepPacket = new PacketContainer(PacketType.Play.Server.ENTITY_METADATA);
 		sleepPacket.getIntegers().write(0, player.getEntityId());
 
-		WrappedDataWatcher poseWatcher = new WrappedDataWatcher();
-		poseWatcher.setEntity(player);
-		poseWatcher.setObject(0, WrappedDataWatcher.Registry.get(byte.class),6 );
-		poseWatcher.setObject(1, WrappedDataWatcher.Registry.get(int.class), 18);
-		poseWatcher.setObject(2, WrappedDataWatcher.Registry.get(int.class), 1);
+		WrappedDataWatcher watcher = new WrappedDataWatcher();
+		watcher.setEntity(player);
+		watcher.setObject(6, WrappedDataWatcher.Registry.get(EntityPose.class), EntityPose.STANDING);
 
-		sleepPacket.getWatchableCollectionModifier().write(0, poseWatcher.getWatchableObjects());
+		sleepPacket.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 
 		KnockoutPlus.get().getProtocolManager().broadcastServerPacket(sleepPacket);
 	}

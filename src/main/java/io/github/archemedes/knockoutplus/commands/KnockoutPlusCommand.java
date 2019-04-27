@@ -17,7 +17,7 @@ public class KnockoutPlusCommand extends CommandTemplate {
 	@Cmd("Testing command")
 	public void test(Player player, Player target) {
 		PacketManager.layDown(target);
-		player.sendMessage("Caused " + target + " to lay down");
+		player.sendMessage("Caused " + target.getName() + " to lay down");
 	}
 
 }
