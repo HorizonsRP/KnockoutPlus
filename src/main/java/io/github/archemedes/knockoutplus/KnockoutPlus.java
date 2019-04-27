@@ -481,4 +481,7 @@ public final class KnockoutPlus extends JavaPlugin {
         return this.koListener;
     }
 
+    public static boolean isAllowed(Player p, String flagName) {
+        return KnockoutPlus.get().worldGuardEnabled && WorldGuardUtils.isAllowed(p, flagName);
+    }
 }

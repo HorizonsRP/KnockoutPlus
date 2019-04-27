@@ -136,7 +136,7 @@ public class KOListener implements Listener {
 
         if (plugin.wasRecentlyKnockedOut(p)) return;
 
-        if (!plugin.nonMobsKO && WorldGuardUtils.isAllowed(p, WorldGuardUtils.MOB_KO)) {
+        if (!plugin.nonMobsKO && KnockoutPlus.isAllowed(p, "mob-knockout")) {
             return;
         }
         if ((e.getCause() == EntityDamageEvent.DamageCause.LAVA) || (e.getCause() == EntityDamageEvent.DamageCause.WITHER)) {
@@ -205,7 +205,7 @@ public class KOListener implements Listener {
 
         Entity killer = e.getDamager();
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
-            if (plugin.playersKO && WorldGuardUtils.isAllowed(p, WorldGuardUtils.PLAYER_KO)) {
+            if (plugin.playersKO && KnockoutPlus.isAllowed(p, "player-knockout")) {
             	Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
@@ -213,7 +213,7 @@ public class KOListener implements Listener {
             return;
         }
         
-        if (!holdingTotem(p) && WorldGuardUtils.isAllowed(p, WorldGuardUtils.MOB_KO)) {
+        if (!holdingTotem(p) && KnockoutPlus.isAllowed(p, "environment-knockout")) {
             e.setCancelled(true);
             this.plugin.koPlayer(p, e.getDamager());
         }
