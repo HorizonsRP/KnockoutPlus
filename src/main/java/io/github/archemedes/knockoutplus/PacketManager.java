@@ -28,7 +28,7 @@ public class PacketManager {
 		sleepPacket.getWatchableCollectionModifier().write(0, poseWatcher.getWatchableObjects());
 		sleepPacket.getWatchableCollectionModifier().write(1, bedWatcher.getWatchableObjects());
 
-		KnockoutPlus.get().getProtocol().broadcastServerPacket(sleepPacket);
+		KnockoutPlus.get().getProtocolManager().broadcastServerPacket(sleepPacket);
 	}
 
 	public static void wakeup(Player player) {
@@ -43,6 +43,6 @@ public class PacketManager {
 
 		sleepPacket.getWatchableCollectionModifier().write(0, poseWatcher.getWatchableObjects());
 
-		KnockoutPlus.get().getProtocol().broadcastServerPacket(sleepPacket);
+		KnockoutPlus.get().getProtocolManager().broadcastServerPacket(sleepPacket);
 	}
 }

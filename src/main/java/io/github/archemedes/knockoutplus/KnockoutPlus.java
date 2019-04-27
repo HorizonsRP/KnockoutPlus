@@ -10,9 +10,7 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.BlockPosition;
 import com.google.common.collect.Lists;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
+import io.github.archemedes.knockoutplus.commands.KnockoutPlusCommand;
 import io.github.archemedes.knockoutplus.commands.ReviveCommand;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
@@ -60,35 +58,36 @@ public final class KnockoutPlus extends JavaPlugin {
     public boolean nonMobsKO;
     public boolean protectBlocks;
     private Map<UUID, Long> recentKos = new HashMap<>();
-    private ProtocolManager protocol;
+    private ProtocolManager protocolManager;
 
     private CorpseRegistry corpseRegistry;
     private KOListener koListener;
     private BukkitTask bleedoutTask;
 
-    private final StateFlag PLAYER_KO = new StateFlag("player-knockout", true);
-    private final StateFlag MOB_KO = new StateFlag("mob-knockout", true);
-    private final StateFlag OTHER_KO = new StateFlag("environment-knockout", true);
+    private boolean worldGuardEnabled = false;
+
 
     @Override
     public void onLoad() {
         INSTANCE = this;
-        FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
-        if (registry.get(PLAYER_KO.getName()) == null) {
-            registry.register(PLAYER_KO);
-            registry.register(MOB_KO);
-            registry.register(OTHER_KO);
-        } else {
-            this.getLogger().info("Skipping flag registry... is the plugin reloading?");
+
+        try {
+            WorldGuardUtils.init();
+            worldGuardEnabled = true;
+        } catch (NoClassDefFoundError ignored) {
+            worldGuardEnabled = false;
         }
     }
 
     @Override
 		public void onEnable() {
         Commands.build(getCommand("revive"), () -> new ReviveCommand(this));
+        Commands.build(getCommand("knockoutplus"), () -> new KnockoutPlusCommand(this));
 
-        OmniApi.registerEvent("down", "downed");
-        OmniApi.registerEvent("revive", "revived");
+        if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
+            OmniApi.registerEvent("down", "downed");
+            OmniApi.registerEvent("revive", "revived");
+        }
 
         corpseRegistry = new CorpseRegistry(this);
         koListener = new KOListener(this);
@@ -106,10 +105,10 @@ public final class KnockoutPlus extends JavaPlugin {
         bleedoutAttribute = new ArcheAttribute("bleedout-time", bleedoutTime);
         if (AttributeRegistry.getInstance().getAttribute(bleedoutAttribute.getName()) == null) AttributeRegistry.getInstance().register(bleedoutAttribute);
         
-        protocol = ProtocolLibrary.getProtocolManager();
-        protocol.removePacketListeners(this);
+        protocolManager = ProtocolLibrary.getProtocolManager();
+        protocolManager.removePacketListeners(this);
 
-        protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
+        protocolManager.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
             @Override
             public void onPacketSending(PacketEvent event) {
                 PacketContainer packet = event.getPacket();
@@ -168,7 +167,7 @@ public final class KnockoutPlus extends JavaPlugin {
     void wake(Player v, Location l, boolean updateBlock) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
         packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
-        protocol.broadcastServerPacket(packet, v, true);
+        protocolManager.broadcastServerPacket(packet, v, true);
 
         if (updateBlock) {
             for (Player t : v.getWorld().getPlayers()) {
@@ -185,7 +184,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
         try {
             v.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK.createBlockData());
-            protocol.sendServerPacket(v, packet);
+            protocolManager.sendServerPacket(v, packet);
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
@@ -446,7 +445,7 @@ public final class KnockoutPlus extends JavaPlugin {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.BED);
         packet.getIntegers().write(0, p.getEntityId());
         packet.getBlockPositionModifier().write(0, new BlockPosition(l.getBlockX(), 0, l.getBlockZ()));
-        protocol.broadcastServerPacket(packet);
+        protocolManager.broadcastServerPacket(packet);
 
         PacketContainer movePacket = new PacketContainer(Server.REL_ENTITY_MOVE);
         movePacket.getIntegers().write(0, p.getEntityId());
@@ -458,7 +457,7 @@ public final class KnockoutPlus extends JavaPlugin {
         for (Player t : targets) {
             if (p != t) {
                 try {
-                    protocol.sendServerPacket(p, packet);
+                    protocolManager.sendServerPacket(p, packet);
                 } catch (InvocationTargetException e) {
                     e.printStackTrace();
                 }

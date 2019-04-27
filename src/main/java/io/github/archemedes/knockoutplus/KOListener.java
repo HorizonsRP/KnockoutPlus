@@ -1,9 +1,5 @@
 package io.github.archemedes.knockoutplus;
 
-import com.sk89q.worldguard.LocalPlayer;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
@@ -139,10 +135,10 @@ public class KOListener implements Listener {
         }
 
         if (plugin.wasRecentlyKnockedOut(p)) return;
-        LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
-        if (!plugin.nonMobsKO && !(getSet(lp).testState(WorldGuardPlugin.inst().wrapPlayer(p), plugin.getOTHER_KO())))
-            return;
 
+        if (!plugin.nonMobsKO && WorldGuardUtils.isAllowed(p, WorldGuardUtils.MOB_KO)) {
+            return;
+        }
         if ((e.getCause() == EntityDamageEvent.DamageCause.LAVA) || (e.getCause() == EntityDamageEvent.DamageCause.WITHER)) {
             return;
         }
@@ -206,12 +202,10 @@ public class KOListener implements Listener {
         if (trueDamage < p.getHealth() - 0.1D){
             return;
         }
-        
-        LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
-        ApplicableRegionSet set = getSet(lp);
+
         Entity killer = e.getDamager();
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
-            if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
+            if (plugin.playersKO && WorldGuardUtils.isAllowed(p, WorldGuardUtils.PLAYER_KO)) {
             	Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
@@ -219,7 +213,7 @@ public class KOListener implements Listener {
             return;
         }
         
-        if (!holdingTotem(p) && plugin.mobsKO && set.testState(lp, plugin.getMOB_KO())) {
+        if (!holdingTotem(p) && WorldGuardUtils.isAllowed(p, WorldGuardUtils.MOB_KO)) {
             e.setCancelled(true);
             this.plugin.koPlayer(p, e.getDamager());
         }
@@ -467,10 +461,5 @@ public class KOListener implements Listener {
                 event.setCancelled(true);
             }
         }
-    }
-
-
-    private ApplicableRegionSet getSet(LocalPlayer player) {
-        return WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery().getApplicableRegions(player.getLocation());
     }
 }
