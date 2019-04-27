@@ -21,8 +21,7 @@ public class PacketManager {
 
 		WrappedDataWatcher watcher = new WrappedDataWatcher();
 		watcher.setEntity(player);
-
-
+		// TODO: Remove NMS when protocolib updates
 		watcher.setObject(6, WrappedDataWatcher.Registry.get(EntityPose.class), EntityPose.SLEEPING);
 		watcher.setObject(12, WrappedDataWatcher.Registry.get(BlockPosition.class, true), Optional.of(new BlockPosition(location.getBlockX(), location.getBlockY() - 3, location.getBlockZ())));
 
