@@ -2,19 +2,18 @@ package io.github.archemedes.knockoutplus;
 
 import co.lotc.core.bukkit.command.Commands;
 import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.wrappers.BlockPosition;
-import com.google.common.collect.Lists;
 import io.github.archemedes.knockoutplus.commands.KnockoutPlusCommand;
 import io.github.archemedes.knockoutplus.commands.ReviveCommand;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
+import io.github.archemedes.knockoutplus.utils.PacketUtils;
+import io.github.archemedes.knockoutplus.utils.WorldGuardUtils;
 import lombok.Getter;
 import net.lordofthecraft.arche.attributes.ArcheAttribute;
 import net.lordofthecraft.arche.attributes.AttributeRegistry;
@@ -37,9 +36,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -117,14 +114,16 @@ public final class KnockoutPlus extends JavaPlugin {
 
                 for (final Corpse c : corpseRegistry.getCorpses())
                     if (c.getEntityId() == id) {
-                        final List<Player> t = Lists.newArrayList(event.getPlayer());
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
-                                    Location l = c.getLocation().add(0, 1, 0);
-                                    sendBedPacket(getServer().getPlayer(c.getVictim()), l, t);
-                                }
-                                , 2L);
+                        Player p = getServer().getPlayer(c.getVictim());
+                        if (p != null ) {
+                            Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
+                                        Location l = c.getLocation().add(0, 1, 0);
+                                        PacketUtils.layDown(p, l);
+                                    }
+                                    , 2L);
 
-                        break;
+                            break;
+                        }
                     }
             }
         });
@@ -175,19 +174,6 @@ public final class KnockoutPlus extends JavaPlugin {
             }
         }
 
-    }
-
-    public void wakeOne(Player v) {
-        PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
-        packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
-        Location l = v.getLocation();
-
-        try {
-            v.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK.createBlockData());
-            protocolManager.sendServerPacket(v, packet);
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -428,41 +414,10 @@ public final class KnockoutPlus extends JavaPlugin {
             p.teleport(l);
         }
 
-        final Location bl = l.add(0.0D, 1.0D, 0.0D);
-
-
-        sendBedPacket(p, bl, p.getWorld().getPlayers());
+        PacketUtils.layDown(p, l);
 
 
         return l;
-    }
-
-    private void sendBedPacket(Player p, Location l, List<Player> targets) {
-        for (Player t : targets) {
-            t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BLACK_BED.createBlockData());
-        }
-
-        PacketContainer packet = new PacketContainer(PacketType.Play.Server.BED);
-        packet.getIntegers().write(0, p.getEntityId());
-        packet.getBlockPositionModifier().write(0, new BlockPosition(l.getBlockX(), 0, l.getBlockZ()));
-        protocolManager.broadcastServerPacket(packet);
-
-        PacketContainer movePacket = new PacketContainer(Server.REL_ENTITY_MOVE);
-        movePacket.getIntegers().write(0, p.getEntityId());
-        movePacket.getIntegers().write(0,  0);
-        movePacket.getIntegers().write(0,  l.getBlockY() + 1);
-        movePacket.getIntegers().write(0,  0);
-        movePacket.getBooleans().write(0,  false);
-
-        for (Player t : targets) {
-            if (p != t) {
-                try {
-                    protocolManager.sendServerPacket(p, packet);
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
     }
 
     public String giveName(Player p) {

@@ -1,4 +1,4 @@
-package io.github.archemedes.knockoutplus;
+package io.github.archemedes.knockoutplus.utils;
 
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
@@ -7,6 +7,7 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
+import io.github.archemedes.knockoutplus.KnockoutPlus;
 import org.bukkit.entity.Player;
 
 public class WorldGuardUtils {

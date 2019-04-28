@@ -1,8 +1,9 @@
-package io.github.archemedes.knockoutplus;
+package io.github.archemedes.knockoutplus.utils;
 
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
+import io.github.archemedes.knockoutplus.KnockoutPlus;
 import net.minecraft.server.v1_14_R1.BlockPosition;
 import net.minecraft.server.v1_14_R1.EntityPose;
 import org.bukkit.Location;
@@ -10,11 +11,9 @@ import org.bukkit.entity.Player;
 
 import java.util.Optional;
 
-public class PacketManager {
+public class PacketUtils {
 
-	public static void layDown(Player player) {
-		Location location = player.getLocation();
-
+	public static void layDown(Player player, Location location) {
 		PacketContainer sleepPacket = new PacketContainer(PacketType.Play.Server.ENTITY_METADATA);
 
 		sleepPacket.getIntegers().write(0, player.getEntityId());

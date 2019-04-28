@@ -3,7 +3,7 @@ package io.github.archemedes.knockoutplus.commands;
 import co.lotc.core.command.CommandTemplate;
 import co.lotc.core.command.annotate.Cmd;
 import io.github.archemedes.knockoutplus.KnockoutPlus;
-import io.github.archemedes.knockoutplus.PacketManager;
+import io.github.archemedes.knockoutplus.utils.PacketUtils;
 import org.bukkit.entity.Player;
 
 public class KnockoutPlusCommand extends CommandTemplate {
@@ -16,13 +16,13 @@ public class KnockoutPlusCommand extends CommandTemplate {
 
 	@Cmd("Testing command")
 	public void down(Player player, Player target) {
-		PacketManager.layDown(target);
+		PacketUtils.layDown(target);
 		player.sendMessage("Caused " + target.getName() + " to lay down");
 	}
 
 	@Cmd("Testing command")
 	public void wakup(Player player, Player target) {
-		PacketManager.wakeup(target);
+		PacketUtils.wakeup(target);
 		player.sendMessage("Picked up " + target.getName());
 	}
 

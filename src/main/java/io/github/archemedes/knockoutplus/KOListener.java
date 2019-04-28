@@ -3,6 +3,7 @@ package io.github.archemedes.knockoutplus;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
+import io.github.archemedes.knockoutplus.utils.PacketUtils;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -122,7 +123,7 @@ public class KOListener implements Listener {
             if (plugin.getCorpseRegistry().isKnockedOut(p) && (e.getDamage() >= p.getHealth())) {
                 plugin.getCorpseRegistry().getCorpse(p).unregister();
                 p.damage(1.0D);
-                plugin.wakeOne(p);
+                PacketUtils.wakeup(p);
                 p.setHealth(0.0D);
             }
 
@@ -222,7 +223,7 @@ public class KOListener implements Listener {
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player p = event.getEntity();
-        plugin.wakeOne(p);
+        PacketUtils.wakeup(p);
         plugin.getRecentKos().remove(event.getEntity().getUniqueId());
         event.setDeathMessage(null);
 
@@ -340,7 +341,7 @@ public class KOListener implements Listener {
                                         plugin.removePlayer(v);
                                         plugin.getCorpseRegistry().getCorpse(v).unregister();
                                         v.damage(1.0D, p);
-                                        plugin.wakeOne(p);
+                                        PacketUtils.wakeup(p);
                                         v.setHealth(0.0D);
                                     }
                             }
