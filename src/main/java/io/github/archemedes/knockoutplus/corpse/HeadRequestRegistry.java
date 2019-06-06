@@ -81,8 +81,7 @@ public class HeadRequestRegistry {
                 h.unregister();
                 loser.sendMessage(ChatColor.RED + "Time expired. Unable to send your player head to " + winner.getName() + ".");
             } else if (!h.getClaimed()) {
-                h.sendPlayerHead();
-                return true;
+                return h.sendPlayerHead();
             } else {
                 loser.sendMessage(ChatColor.RED + "You've already sent your player head to " + winner.getName() + ".");
             }

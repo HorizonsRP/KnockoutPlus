@@ -33,7 +33,7 @@ public class HeadRequest {
         }
     }
 
-    public void sendPlayerHead() {
+    public boolean sendPlayerHead() {
         Player winner = Bukkit.getPlayer(this.winner);
         Player loser = Bukkit.getPlayer(this.loser);
         Map<Integer, ItemStack> map = winner.getInventory().addItem(ArcheCore.getPersona(loser).getSkin().getHeadItem());
@@ -42,10 +42,12 @@ public class HeadRequest {
             this.claimed = true;
             loser.sendMessage(ChatColor.BLUE + "Sent player head to " + ChatColor.GOLD + winner.getName());
             winner.sendMessage(ChatColor.GOLD + loser.getName() + ChatColor.BLUE + " has sent their player head to you.");
+            return true;
         } else {
             loser.sendMessage(ChatColor.RED + winner.getName() + "'s inventory is full.");
             winner.sendMessage(ChatColor.RED + loser.getName() + " tried sending their player head to you, but your inventory is full.");
         }
+        return false;
     }
 
     public UUID getWinner() { return this.winner; }
