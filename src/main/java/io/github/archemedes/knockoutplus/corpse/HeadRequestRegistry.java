@@ -77,10 +77,11 @@ public class HeadRequestRegistry {
     public boolean sendHead(Player winner, Player loser) {
         HeadRequest h = getHeadRequest(winner, loser);
         if (h != null) {
-            if (!h.getClaimed()) {
+            if ((h.getDownedTime() + TimeUnit.MINUTES.toMillis(60L)) < System.currentTimeMillis()) {
+                h.unregister();
+                loser.sendMessage(ChatColor.RED + "Time expired. Unable to send your player head to " + winner.getName() + ".");
+            } else if (!h.getClaimed()) {
                 h.sendPlayerHead();
-                loser.sendMessage(ChatColor.BLUE + "Sent player head to " + ChatColor.GOLD + winner.getName());
-                winner.sendMessage(ChatColor.GOLD + loser.getName() + ChatColor.BLUE + " has sent their player head to you.");
                 return true;
             } else {
                 loser.sendMessage(ChatColor.RED + "You've already sent your player head to " + winner.getName() + ".");

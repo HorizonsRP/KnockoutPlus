@@ -4,7 +4,10 @@ import io.github.archemedes.knockoutplus.KnockoutPlus;
 import net.lordofthecraft.arche.ArcheCore;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
+import java.util.Map;
 import java.util.UUID;
 
 public class HeadRequest {
@@ -31,9 +34,18 @@ public class HeadRequest {
     }
 
     public void sendPlayerHead() {
-        Bukkit.getPlayer(this.winner).getInventory().addItem(ArcheCore.getPersona(Bukkit.getPlayer(this.loser)).getSkin().getHeadItem());
-        this.downedTime = System.currentTimeMillis();
-        this.claimed = true;
+        Player winner = Bukkit.getPlayer(this.winner);
+        Player loser = Bukkit.getPlayer(this.loser);
+        Map<Integer, ItemStack> map = winner.getInventory().addItem(ArcheCore.getPersona(loser).getSkin().getHeadItem());
+        if (map.isEmpty()) {
+            this.downedTime = System.currentTimeMillis();
+            this.claimed = true;
+            loser.sendMessage(ChatColor.BLUE + "Sent player head to " + ChatColor.GOLD + winner.getName());
+            winner.sendMessage(ChatColor.GOLD + loser.getName() + ChatColor.BLUE + " has sent their player head to you.");
+        } else {
+            loser.sendMessage(ChatColor.RED + winner.getName() + "'s inventory is full.");
+            winner.sendMessage(ChatColor.RED + loser.getName() + " tried sending their player head to you, but your inventory is full.");
+        }
     }
 
     public UUID getWinner() { return this.winner; }
