@@ -1,5 +1,6 @@
 package io.github.archemedes.knockoutplus;
 
+import co.lotc.core.Tythan;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -16,6 +17,7 @@ import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
+import io.github.archemedes.knockoutplus.corpse.HeadRequestRegistry;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import lombok.Getter;
 import net.lordofthecraft.arche.attributes.ArcheAttribute;
@@ -60,6 +62,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
     WorldGuardPlugin wgPlugin;
     private CorpseRegistry corpseRegistry;
+    private HeadRequestRegistry headRequestRegistry;
     private KOListener koListener;
     private BukkitTask bleedoutTask;
 
@@ -87,6 +90,7 @@ public final class KnockoutPlus extends JavaPlugin {
         OmniApi.registerEvent("revive", "revived");
 
         corpseRegistry = new CorpseRegistry(this);
+        headRequestRegistry = new HeadRequestRegistry(this);
         koListener = new KOListener(this);
         saveDefaultConfig();
 
@@ -418,9 +422,31 @@ public final class KnockoutPlus extends JavaPlugin {
                 sender.sendMessage(ChatColor.YELLOW + "Environment: " + (nonMobsKO ? ChatColor.GREEN : ChatColor.RED) + nonMobsKO);
                 return true;
             }
+        } else if (cmd.getName().equalsIgnoreCase("requestheads")) {
+            if (!(sender instanceof Player))
+                sender.sendMessage(ChatColor.RED + "This command is only useful to players.");
+            else {
+                headRequestRegistry.requestHeads((Player) sender);
+            }
+
+            return true;
+        } else if (cmd.getName().equalsIgnoreCase("sendhead")) {
+            if (!(sender instanceof Player))
+                sender.sendMessage(ChatColor.RED + "This command is only useful to players.");
+            else {
+                if (args.length < 1) {
+                    sender.sendMessage(ChatColor.RED + "Usage: /sendhead [player]");
+                    return true;
+                } else if (Bukkit.getPlayer(args[0]) == null) {
+                    sender.sendMessage(ChatColor.RED + "Unable to request a player head from an offline player.");
+                } else {
+                    headRequestRegistry.sendHead((Player) sender, Bukkit.getPlayer(args[0]));
+                }
+            }
+            return true;
         }
 
-        return false;
+            return false;
     }
 
     void koPlayer(Player p) {
@@ -453,6 +479,12 @@ public final class KnockoutPlus extends JavaPlugin {
         p.sendMessage(ChatColor.RED + "You were defeated by " + ChatColor.BOLD + killer.getDisplayName());
 
         killer.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
+        killer.sendMessage(Tythan.get().chatBuilder()
+                .append(ChatColor.BLUE + "To request the player's head, click ")
+                .appendButton(ChatColor.GOLD + "Request Player Head", "/requestheads")
+                .append(ChatColor.BLUE + " or run the command " + ChatColor.GOLD + "/requestheads")
+                .build()
+                );
         killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
 
         koListener.verdictDelay.add(killer.getUniqueId());
@@ -463,6 +495,7 @@ public final class KnockoutPlus extends JavaPlugin {
         Location l = layPlayerDown(p);
 
         corpseRegistry.register(p, killer, l);
+        headRequestRegistry.register(killer, p);
         logKill(p, killer);
     }
 
@@ -571,6 +604,10 @@ public final class KnockoutPlus extends JavaPlugin {
 
     public CorpseRegistry getCorpseRegistry(){
         return this.corpseRegistry;
+    }
+
+    public HeadRequestRegistry getHeadRequestRegistry(){
+        return this.headRequestRegistry;
     }
 
     public WorldGuardPlugin getWgPlugin(){
