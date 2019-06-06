@@ -88,6 +88,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
         OmniApi.registerEvent("down", "downed");
         OmniApi.registerEvent("revive", "revived");
+        OmniApi.registerEvent("send player head", "sent player head to");
 
         corpseRegistry = new CorpseRegistry(this);
         headRequestRegistry = new HeadRequestRegistry(this);
@@ -440,7 +441,14 @@ public final class KnockoutPlus extends JavaPlugin {
                 } else if (Bukkit.getPlayer(args[0]) == null) {
                     sender.sendMessage(ChatColor.RED + "Unable to request a player head from an offline player.");
                 } else {
-                    headRequestRegistry.sendHead((Player) sender, Bukkit.getPlayer(args[0]));
+                    Player winner = Bukkit.getPlayer(args[0]);
+                    if (headRequestRegistry.sendHead(winner, (Player) sender)) {
+                        if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
+                            DataWrapper wrapper = DataWrapper.createNew();
+                            wrapper.set(TARGET, winner.getName());
+                            OEntry.create().source(sender).custom("send player head", wrapper).save();
+                        }
+                    }
                 }
             }
             return true;
@@ -480,9 +488,9 @@ public final class KnockoutPlus extends JavaPlugin {
 
         killer.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
         killer.sendMessage(Tythan.get().chatBuilder()
-                .append(ChatColor.BLUE + "To request the player's head, click ")
+                .append(ChatColor.BLUE + "You can click ")
                 .appendButton(ChatColor.GOLD + "Request Player Head", "/requestheads")
-                .append(ChatColor.BLUE + " or run the command " + ChatColor.GOLD + "/requestheads")
+                .append(ChatColor.BLUE + " or do " + ChatColor.GOLD + "/requestheads")
                 .build()
                 );
         killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");

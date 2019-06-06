@@ -74,19 +74,21 @@ public class HeadRequestRegistry {
         winnerPlayer.sendMessage(ChatColor.BLUE + "Requested player heads from " + ChatColor.GOLD + headsRequested + ChatColor.BLUE + " player" + (headsRequested == 1 ? "" : "s") + ".");
     }
 
-    public void sendHead(Player winner, Player loser) {
+    public boolean sendHead(Player winner, Player loser) {
         HeadRequest h = getHeadRequest(winner, loser);
         if (h != null) {
             if (!h.getClaimed()) {
                 h.sendPlayerHead();
                 loser.sendMessage(ChatColor.BLUE + "Sent player head to " + ChatColor.GOLD + winner.getName());
                 winner.sendMessage(ChatColor.GOLD + loser.getName() + ChatColor.BLUE + " has sent their player head to you.");
+                return true;
             } else {
                 loser.sendMessage(ChatColor.RED + "You've already sent your player head to " + winner.getName() + ".");
             }
         } else {
-            loser.sendMessage(ChatColor.RED + "Unable to send player head. " + winner.getName() + " hasn't defeated you in PvP.");
+            loser.sendMessage(ChatColor.RED + winner.getName() + " hasn't defeated you in PvP.");
         }
+        return false;
     }
 
 }
