@@ -45,33 +45,22 @@ public class HeadRequestRegistry {
         return null;
     }
 
-    public void requestHeads(Player winner) {
-        requestHeads(winner.getUniqueId());
-    }
-
-    public void requestHeads(UUID winner) {
-        Player winnerPlayer = Bukkit.getPlayer(winner);
-        Set<HeadRequest> reqs = HeadRequests.get(winner);
-        int headsRequested = 0;
+    public void requestHead(Player winner, Player loser) {
+        Set<HeadRequest> reqs = HeadRequests.get(winner.getUniqueId());
 
         for (HeadRequest headRequest : reqs) {
-            if (Bukkit.getPlayer(headRequest.getLoser()) == null) {
-                winnerPlayer.sendMessage(ChatColor.RED + "Unable to request a player head from an offline player.");
-            } else if (headRequest.getClaimed()) {
-
-            } else {
+            if (Bukkit.getPlayer(headRequest.getLoser()).equals(loser.getUniqueId()) && !headRequest.getClaimed()) {
                 if ((headRequest.getDownedTime() + TimeUnit.MINUTES.toMillis(60L)) < System.currentTimeMillis()) {
                     headRequest.unregister();
+                    winner.sendMessage(ChatColor.RED + "Time expired. Unable to request " + loser.getName() + "'s head.");
                 } else if ((headRequest.getLastRequestTime() + TimeUnit.MINUTES.toMillis(5L)) > System.currentTimeMillis()) {
-                    winnerPlayer.sendMessage(ChatColor.RED + "You've already sent a request for someone's head recently.");
+                    winner.sendMessage(ChatColor.RED + "You've already sent a request for " + loser.getName() + "'s head recently.");
                 } else {
                     headRequest.setLastRequestTime(System.currentTimeMillis());
                     headRequest.askForPlayerHead();
-                    headsRequested++;
                 }
             }
         }
-        winnerPlayer.sendMessage(ChatColor.BLUE + "Requested player heads from " + ChatColor.GOLD + headsRequested + ChatColor.BLUE + " player" + (headsRequested == 1 ? "" : "s") + ".");
     }
 
     public boolean sendHead(Player winner, Player loser) {

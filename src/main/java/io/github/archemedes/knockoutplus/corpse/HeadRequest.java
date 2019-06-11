@@ -28,8 +28,11 @@ public class HeadRequest {
     }
 
     public void askForPlayerHead() {
-        if (Bukkit.getPlayer(this.loser) != null && !this.claimed) {
-            Bukkit.getPlayer(this.loser).sendMessage(ChatColor.GOLD + Bukkit.getPlayer(this.winner).getName() + ChatColor.BLUE + " has requested for your player head. Use " + ChatColor.GOLD + "/sendhead [player]" + ChatColor.BLUE + " if you want to send your player head to them.");
+        if (Bukkit.getPlayer(this.winner) != null && Bukkit.getPlayer(this.loser) != null &&!this.claimed) {
+            Player winner = Bukkit.getPlayer(this.winner);
+            Player loser = Bukkit.getPlayer(this.loser);
+            winner.sendMessage(ChatColor.BLUE + "Requested player head from " + ChatColor.GOLD + loser.getName());
+            loser.sendMessage(ChatColor.GOLD + winner.getName() + ChatColor.BLUE + " has requested for your player head. Use " + ChatColor.GOLD + "/koplushead send [player]" + ChatColor.BLUE + " if you want to send it to them.");
         }
     }
 

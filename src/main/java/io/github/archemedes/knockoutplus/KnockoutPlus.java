@@ -88,7 +88,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
         OmniApi.registerEvent("down", "downed");
         OmniApi.registerEvent("revive", "revived");
-        OmniApi.registerEvent("send player head", "sent player head to");
+        OmniApi.registerEvent("decapitate", "decapitated");
 
         corpseRegistry = new CorpseRegistry(this);
         headRequestRegistry = new HeadRequestRegistry(this);
@@ -423,30 +423,23 @@ public final class KnockoutPlus extends JavaPlugin {
                 sender.sendMessage(ChatColor.YELLOW + "Environment: " + (nonMobsKO ? ChatColor.GREEN : ChatColor.RED) + nonMobsKO);
                 return true;
             }
-        } else if (cmd.getName().equalsIgnoreCase("requestheads")) {
+        } else if (cmd.getName().equalsIgnoreCase("koplushead")) {
             if (!(sender instanceof Player))
                 sender.sendMessage(ChatColor.RED + "This command is only useful to players.");
             else {
-                headRequestRegistry.requestHeads((Player) sender);
-            }
-
-            return true;
-        } else if (cmd.getName().equalsIgnoreCase("sendhead")) {
-            if (!(sender instanceof Player))
-                sender.sendMessage(ChatColor.RED + "This command is only useful to players.");
-            else {
-                if (args.length < 1) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /sendhead [player]");
-                    return true;
-                } else if (Bukkit.getPlayer(args[0]) == null) {
-                    sender.sendMessage(ChatColor.RED + "Unable to request a player head from an offline player.");
-                } else {
-                    Player winner = Bukkit.getPlayer(args[0]);
+                if (args.length < 2) {
+                    sender.sendMessage(ChatColor.RED + "Usage: /koplushead [request/send] [player]");
+                } else if (Bukkit.getPlayer(args[1]) == null) {
+                    sender.sendMessage(ChatColor.RED + "Player is offline or doesn't exist.");
+                } else if (args[0].equalsIgnoreCase("request")) {
+                    headRequestRegistry.requestHead((Player) sender, Bukkit.getPlayer(args[1]));
+                } else if (args[0].equalsIgnoreCase("send")) {
+                    Player winner = Bukkit.getPlayer(args[1]);
                     if (headRequestRegistry.sendHead(winner, (Player) sender)) {
                         if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
                             DataWrapper wrapper = DataWrapper.createNew();
-                            wrapper.set(TARGET, winner.getName());
-                            OEntry.create().source(sender).custom("send player head", wrapper).save();
+                            wrapper.set(TARGET, sender.getName());
+                            OEntry.create().source(winner).custom("decapitate", wrapper).save();
                         }
                     }
                 }
@@ -454,7 +447,7 @@ public final class KnockoutPlus extends JavaPlugin {
             return true;
         }
 
-            return false;
+        return false;
     }
 
     void koPlayer(Player p) {
@@ -489,8 +482,8 @@ public final class KnockoutPlus extends JavaPlugin {
         killer.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
         killer.sendMessage(Tythan.get().chatBuilder()
                 .append(ChatColor.BLUE + "You can click ")
-                .appendButton(ChatColor.GOLD + "Request Player Head", "/requestheads")
-                .append(ChatColor.BLUE + " or do " + ChatColor.GOLD + "/requestheads")
+                .appendButton(ChatColor.GOLD + "Request Player Head", "/koplushead request " + p.getName())
+                .append(ChatColor.BLUE + " or do " + ChatColor.GOLD + "/koplushead request " + p.getName())
                 .build()
                 );
         killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
