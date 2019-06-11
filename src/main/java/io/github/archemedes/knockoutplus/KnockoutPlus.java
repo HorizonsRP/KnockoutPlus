@@ -480,12 +480,6 @@ public final class KnockoutPlus extends JavaPlugin {
         p.sendMessage(ChatColor.RED + "You were defeated by " + ChatColor.BOLD + killer.getDisplayName());
 
         killer.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
-        killer.sendMessage(Tythan.get().chatBuilder()
-                .append(ChatColor.BLUE + "You can click ")
-                .appendButton(ChatColor.GOLD + "Request Player Head", "/koplushead request " + p.getName())
-                .append(ChatColor.BLUE + " or do " + ChatColor.GOLD + "/koplushead request " + p.getName())
-                .build()
-                );
         killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
 
         koListener.verdictDelay.add(killer.getUniqueId());
@@ -496,7 +490,6 @@ public final class KnockoutPlus extends JavaPlugin {
         Location l = layPlayerDown(p);
 
         corpseRegistry.register(p, killer, l);
-        headRequestRegistry.register(killer, p);
         logKill(p, killer);
     }
 

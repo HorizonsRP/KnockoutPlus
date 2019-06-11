@@ -1,5 +1,6 @@
 package io.github.archemedes.knockoutplus;
 
+import co.lotc.core.Tythan;
 import com.sk89q.worldguard.LocalPlayer;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -373,6 +374,13 @@ public class KOListener implements Listener {
                                         v.damage(1.0D, p);
                                         plugin.wakeOne(p);
                                         v.setHealth(0.0D);
+                                        p.sendMessage(Tythan.get().chatBuilder()
+                                                .append(ChatColor.BLUE + "To request the victim's head, click on ")
+                                                .appendButton(ChatColor.GOLD + "Request Player Head", "/koplushead request " + v.getName())
+                                                .append(ChatColor.BLUE + " or run the command " + ChatColor.GOLD + "/koplushead request " + v.getName())
+                                                .build()
+                                        );
+                                        plugin.getHeadRequestRegistry().register(p, v);
                                     }
                             }
                             , 40L);
