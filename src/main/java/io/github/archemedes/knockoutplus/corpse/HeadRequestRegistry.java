@@ -28,9 +28,11 @@ public class HeadRequestRegistry {
         } else {
             if (!h.getClaimed()) {
                 h.setDownedTime(System.currentTimeMillis());
+                h.updateHead();
             } else if ((h.getDownedTime() + TimeUnit.MINUTES.toMillis(60L)) < System.currentTimeMillis()) {
                 h.setDownedTime(System.currentTimeMillis());
                 h.setClaimed(false);
+                h.updateHead();
             }
         }
     }

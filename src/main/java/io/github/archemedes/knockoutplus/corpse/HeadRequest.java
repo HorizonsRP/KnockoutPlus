@@ -13,6 +13,7 @@ import java.util.UUID;
 public class HeadRequest {
     private final UUID winner;
     private final UUID loser;
+    private ItemStack head;
     private long downedTime;
     private long lastRequestTime;
     private boolean claimed;
@@ -21,6 +22,7 @@ public class HeadRequest {
     public HeadRequest(UUID winner, UUID loser, KnockoutPlus plugin) {
         this.winner = winner;
         this.loser = loser;
+        this.head = ArcheCore.getPersona(Bukkit.getPlayer(this.loser)).getSkin().getHeadItem();
         this.downedTime = System.currentTimeMillis();
         this.lastRequestTime = 0L;
         this.claimed = false;
@@ -39,7 +41,7 @@ public class HeadRequest {
     public boolean sendPlayerHead() {
         Player winner = Bukkit.getPlayer(this.winner);
         Player loser = Bukkit.getPlayer(this.loser);
-        Map<Integer, ItemStack> map = winner.getInventory().addItem(ArcheCore.getPersona(loser).getSkin().getHeadItem());
+        Map<Integer, ItemStack> map = winner.getInventory().addItem(this.head);
         if (map.isEmpty()) {
             this.downedTime = System.currentTimeMillis();
             this.claimed = true;
@@ -56,6 +58,8 @@ public class HeadRequest {
     public UUID getWinner() { return this.winner; }
 
     public UUID getLoser() { return this.loser; }
+
+    public void updateHead() { this.head = ArcheCore.getPersona(Bukkit.getPlayer(this.loser)).getSkin().getHeadItem(); }
 
     public long getDownedTime() { return this.downedTime; }
 
