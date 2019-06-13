@@ -4,8 +4,10 @@ import io.github.archemedes.knockoutplus.KnockoutPlus;
 import net.lordofthecraft.arche.ArcheCore;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.Map;
 import java.util.UUID;
@@ -22,15 +24,29 @@ public class HeadRequest {
     public HeadRequest(UUID winner, UUID loser, KnockoutPlus plugin) {
         this.winner = winner;
         this.loser = loser;
-        this.head = ArcheCore.getPersona(Bukkit.getPlayer(this.loser)).getSkin().getHeadItem();
+        this.head = newHeadItem();
         this.downedTime = System.currentTimeMillis();
         this.lastRequestTime = 0L;
         this.claimed = false;
         this.plugin = plugin;
     }
 
+    private ItemStack newHeadItem() {
+        ItemStack headItem;
+        Player loser = Bukkit.getPlayer(this.loser);
+        if (ArcheCore.getPersona(loser).hasSkin()) {
+            headItem = ArcheCore.getPersona(loser).getSkin().getHeadItem();
+        } else {
+            headItem = new ItemStack(Material.PLAYER_HEAD, 1);
+            SkullMeta meta = (SkullMeta) headItem.getItemMeta();
+            meta.setOwningPlayer(loser);
+            headItem.setItemMeta(meta);
+       }
+        return headItem;
+    }
+
     public void askForPlayerHead() {
-        if (Bukkit.getPlayer(this.winner) != null && Bukkit.getPlayer(this.loser) != null &&!this.claimed) {
+        if (!this.claimed) {
             Player winner = Bukkit.getPlayer(this.winner);
             Player loser = Bukkit.getPlayer(this.loser);
             winner.sendMessage(ChatColor.BLUE + "Requested player head from " + ChatColor.GOLD + loser.getName());
@@ -59,7 +75,7 @@ public class HeadRequest {
 
     public UUID getLoser() { return this.loser; }
 
-    public void updateHead() { this.head = ArcheCore.getPersona(Bukkit.getPlayer(this.loser)).getSkin().getHeadItem(); }
+    public void updateHead() { this.head = newHeadItem(); }
 
     public long getDownedTime() { return this.downedTime; }
 

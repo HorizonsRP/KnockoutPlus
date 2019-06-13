@@ -3,7 +3,6 @@ package io.github.archemedes.knockoutplus.corpse;
 import com.google.common.collect.HashMultimap;
 import io.github.archemedes.knockoutplus.KnockoutPlus;
 import lombok.Getter;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -51,18 +50,24 @@ public class HeadRequestRegistry {
         Set<HeadRequest> reqs = HeadRequests.get(winner.getUniqueId());
 
         for (HeadRequest headRequest : reqs) {
-            if (Bukkit.getPlayer(headRequest.getLoser()).equals(loser.getUniqueId()) && !headRequest.getClaimed()) {
-                if ((headRequest.getDownedTime() + TimeUnit.MINUTES.toMillis(60L)) < System.currentTimeMillis()) {
-                    headRequest.unregister();
-                    winner.sendMessage(ChatColor.RED + "Time expired. Unable to request " + loser.getName() + "'s head.");
-                } else if ((headRequest.getLastRequestTime() + TimeUnit.MINUTES.toMillis(5L)) > System.currentTimeMillis()) {
-                    winner.sendMessage(ChatColor.RED + "You've already sent a request for " + loser.getName() + "'s head recently.");
+            if (headRequest.getLoser().equals(loser.getUniqueId())) {
+                if (!headRequest.getClaimed()) {
+                    if ((headRequest.getDownedTime() + TimeUnit.MINUTES.toMillis(60L)) < System.currentTimeMillis()) {
+                        headRequest.unregister();
+                        winner.sendMessage(ChatColor.RED + "Time expired. Unable to request " + loser.getName() + "'s head.");
+                    } else if ((headRequest.getLastRequestTime() + TimeUnit.MINUTES.toMillis(5L)) > System.currentTimeMillis()) {
+                        winner.sendMessage(ChatColor.RED + "You've already sent a request for " + loser.getName() + "'s head recently.");
+                    } else {
+                        headRequest.setLastRequestTime(System.currentTimeMillis());
+                        headRequest.askForPlayerHead();
+                    }
                 } else {
-                    headRequest.setLastRequestTime(System.currentTimeMillis());
-                    headRequest.askForPlayerHead();
+                    winner.sendMessage("You've already received " + loser.getName() + "'s head recently.");
                 }
+                return;
             }
         }
+        winner.sendMessage("You haven't executed " + loser.getName() + " after defeating them in PvP.");
     }
 
     public boolean sendHead(Player winner, Player loser) {
@@ -77,7 +82,7 @@ public class HeadRequestRegistry {
                 loser.sendMessage(ChatColor.RED + "You've already sent your player head to " + winner.getName() + ".");
             }
         } else {
-            loser.sendMessage(ChatColor.RED + winner.getName() + " hasn't defeated you in PvP.");
+            loser.sendMessage(ChatColor.RED + winner.getName() + " hasn't executed you after defeating you in PvP.");
         }
         return false;
     }
