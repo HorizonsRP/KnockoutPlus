@@ -1,5 +1,6 @@
 package io.github.archemedes.knockoutplus;
 
+import co.lotc.core.Tythan;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -16,6 +17,7 @@ import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
+import io.github.archemedes.knockoutplus.corpse.HeadRequestRegistry;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import lombok.Getter;
 import net.lordofthecraft.arche.attributes.ArcheAttribute;
@@ -60,6 +62,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
     WorldGuardPlugin wgPlugin;
     private CorpseRegistry corpseRegistry;
+    private HeadRequestRegistry headRequestRegistry;
     private KOListener koListener;
     private BukkitTask bleedoutTask;
 
@@ -85,8 +88,10 @@ public final class KnockoutPlus extends JavaPlugin {
 
         OmniApi.registerEvent("down", "downed");
         OmniApi.registerEvent("revive", "revived");
+        OmniApi.registerEvent("decapitate", "decapitated");
 
         corpseRegistry = new CorpseRegistry(this);
+        headRequestRegistry = new HeadRequestRegistry(this);
         koListener = new KOListener(this);
         saveDefaultConfig();
 
@@ -418,6 +423,28 @@ public final class KnockoutPlus extends JavaPlugin {
                 sender.sendMessage(ChatColor.YELLOW + "Environment: " + (nonMobsKO ? ChatColor.GREEN : ChatColor.RED) + nonMobsKO);
                 return true;
             }
+        } else if (cmd.getName().equalsIgnoreCase("koplushead")) {
+            if (!(sender instanceof Player))
+                sender.sendMessage(ChatColor.RED + "This command is only useful to players.");
+            else {
+                if (args.length < 2) {
+                    sender.sendMessage(ChatColor.RED + "Usage: /koplushead [request/send] [player]");
+                } else if (Bukkit.getPlayer(args[1]) == null) {
+                    sender.sendMessage(ChatColor.RED + "Player is offline or doesn't exist.");
+                } else if (args[0].equalsIgnoreCase("request")) {
+                    headRequestRegistry.requestHead((Player) sender, Bukkit.getPlayer(args[1]));
+                } else if (args[0].equalsIgnoreCase("send")) {
+                    Player winner = Bukkit.getPlayer(args[1]);
+                    if (headRequestRegistry.sendHead(winner, (Player) sender)) {
+                        if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
+                            DataWrapper wrapper = DataWrapper.createNew();
+                            wrapper.set(TARGET, sender.getName());
+                            OEntry.create().source(winner).custom("decapitate", wrapper).save();
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
         return false;
@@ -571,6 +598,10 @@ public final class KnockoutPlus extends JavaPlugin {
 
     public CorpseRegistry getCorpseRegistry(){
         return this.corpseRegistry;
+    }
+
+    public HeadRequestRegistry getHeadRequestRegistry(){
+        return this.headRequestRegistry;
     }
 
     public WorldGuardPlugin getWgPlugin(){

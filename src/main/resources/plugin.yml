@@ -33,6 +33,9 @@ commands:
       description: List current KOs and status of flags.
       permission: knockoutplus.knockout
       aliases: [knockoutplus, kp, ko]
-      sage: /<command> [list/status]
+      usage: /<command> [list/status]
    wcstats:
      description: Stats for war team
+   koplushead:
+     description: Request or send player heads
+     usage: /koplushead [request/send] [player]
