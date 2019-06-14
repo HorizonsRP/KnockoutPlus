@@ -176,7 +176,7 @@ public class KOListener implements Listener {
     			|| i.getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING;
     }
     
-    @EventHandler
+    @EventHandler(priority=EventPriority.LOWEST)
     public void onPlayerLog(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         Corpse c = plugin.getCorpseRegistry().getCorpse(p);

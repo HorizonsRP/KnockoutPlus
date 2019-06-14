@@ -1,6 +1,5 @@
 package io.github.archemedes.knockoutplus;
 
-import co.lotc.core.Tythan;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -109,7 +108,7 @@ public final class KnockoutPlus extends JavaPlugin {
         
         protocol = ProtocolLibrary.getProtocolManager();
         protocol.removePacketListeners(this);
-
+        
         protocol.addPacketListener(new PacketAdapter(this, PacketType.Play.Server.NAMED_ENTITY_SPAWN) {
             @Override
             public void onPacketSending(PacketEvent event) {
