@@ -8,8 +8,11 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
-import net.lordofthecraft.betterteams.Affixes;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -17,8 +20,17 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityResurrectEvent;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -187,30 +199,6 @@ public class KOListener implements Listener {
             c.unregister();
             p.setHealth(0.0D);
         }
-    }
-    
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
-    public void onFriendlyFire (EntityDamageByEntityEvent e) {
-    	if (!(e.getEntity() instanceof Player)) return;
-    	 Entity killer = e.getDamager();
-    	 Player p = (Player) e.getEntity();
-    	 LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
-    	 ApplicableRegionSet set = WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery().getApplicableRegions(lp.getLocation());
-
-         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
-             if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
-                 Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
-                 Affixes pa = Affixes.fromExistingTeams(p);
-                 Affixes ka = Affixes.fromExistingTeams(k);
-                 if(pa.getStatus() != null && ka.getStatus() != null) {
-                     if (pa.getStatus().equals(ka.getStatus())) {
-                         e.setCancelled(true);
-                         k.sendMessage(ChatColor.RED + "You may not damage a player with the same status as yourself.");
-                     }
-                 }
-             }
-         }
-    	
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
