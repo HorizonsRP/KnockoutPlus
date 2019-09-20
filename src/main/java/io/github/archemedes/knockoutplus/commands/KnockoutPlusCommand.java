@@ -16,12 +16,12 @@ public class KnockoutPlusCommand extends CommandTemplate {
 
 	@Cmd("Testing command")
 	public void down(Player player, Player target) {
-		PacketUtils.layDown(target);
+        PacketUtils.layDown(target, target.getLocation());
 		player.sendMessage("Caused " + target.getName() + " to lay down");
 	}
 
 	@Cmd("Testing command")
-	public void wakup(Player player, Player target) {
+    public void wakeup(Player player, Player target) {
 		PacketUtils.wakeup(target);
 		player.sendMessage("Picked up " + target.getName());
 	}

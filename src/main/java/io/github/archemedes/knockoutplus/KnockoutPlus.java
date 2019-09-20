@@ -163,7 +163,7 @@ public final class KnockoutPlus extends JavaPlugin {
         return false;
     }
 
-    void wake(Player v, Location l, boolean updateBlock) {
+    public void wake(Player v, Location l, boolean updateBlock) {
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.ANIMATION);
         packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
         protocolManager.broadcastServerPacket(packet, v, true);
