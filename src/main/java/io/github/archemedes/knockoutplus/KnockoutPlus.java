@@ -1,8 +1,8 @@
 package io.github.archemedes.knockoutplus;
 
+import co.lotc.core.bukkit.command.Commands;
 import co.lotc.core.bukkit.util.ChatBuilder;
 import co.lotc.core.bukkit.util.ItemUtil;
-import co.lotc.core.bukkit.command.Commands;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
@@ -24,6 +24,7 @@ import net.lordofthecraft.arche.attributes.AttributeRegistry;
 import net.lordofthecraft.omniscience.api.OmniApi;
 import net.lordofthecraft.omniscience.api.data.DataWrapper;
 import net.lordofthecraft.omniscience.api.entry.OEntry;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.block.Block;
@@ -376,10 +377,10 @@ public final class KnockoutPlus extends JavaPlugin {
         ChatBuilder chatBuilder = new ChatBuilder("");
         chatBuilder.append("You were defeated by ").color(ChatColor.BOLD).color(ChatColor.RED)
                 .append(ArcheCore.getPersona(killer).getName()).color(ChatColor.GOLD).hover(killer.getName())
-                .append(" using ").color(ChatColor.RED);
+                .append(" using ", ComponentBuilder.FormatRetention.FORMATTING).color(ChatColor.RED);
         if(weapon.getType() != Material.AIR)
             chatBuilder.append("[").color(ChatColor.RED)
-                    .append(ChatColor.stripColor(ItemUtil.getDisplayName(weapon))).hoverItem(weapon).reset()
+                    .append(ChatColor.stripColor(ItemUtil.getDisplayName(weapon))).reset().hoverItem(weapon)
                     .append("]").color(ChatColor.RED);
         else
             chatBuilder.append("their fists!");
