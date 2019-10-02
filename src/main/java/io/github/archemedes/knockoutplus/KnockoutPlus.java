@@ -379,7 +379,7 @@ public final class KnockoutPlus extends JavaPlugin {
                 .append(" using ").color(ChatColor.RED);
         if(weapon.getType() != Material.AIR)
             chatBuilder.append("[").color(ChatColor.RED)
-                    .append(ChatColor.RESET + ChatColor.stripColor(ItemUtil.getDisplayName(weapon))).hoverItem(weapon)
+                    .append(ChatColor.stripColor(ItemUtil.getDisplayName(weapon))).hoverItem(weapon).reset()
                     .append("]").color(ChatColor.RED);
         else
             chatBuilder.append("their fists!");
