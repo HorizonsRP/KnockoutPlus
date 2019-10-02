@@ -36,6 +36,7 @@ public class PacketUtils {
 		WrappedDataWatcher watcher = new WrappedDataWatcher();
 		watcher.setEntity(player);
 		watcher.setObject(6, WrappedDataWatcher.Registry.get(EntityPose.class), EntityPose.STANDING);
+		watcher.setObject(12, WrappedDataWatcher.Registry.get(BlockPosition.class, true), Optional.empty());
 
 		sleepPacket.getWatchableCollectionModifier().write(0, watcher.getWatchableObjects());
 

@@ -84,7 +84,7 @@ public class CorpseRegistry {
                 plugin.revivePlayer(p, null, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
                 /*if (p != null) {
                     p.damage(1.0D);
-                    plugin.wake(p, null, false);
+                    plugin.wake(p, p.getLocation(), false);
                     p.setHealth(0.0D);
                 } else {
                     Bukkit.getLogger().warning("[KO+] Player was null while we tried to kill: " + c.getVictim());

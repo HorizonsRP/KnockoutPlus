@@ -45,15 +45,13 @@ import static net.lordofthecraft.omniscience.api.data.DataKeys.TARGET;
 @Getter
 public final class KnockoutPlus extends JavaPlugin {
     private static KnockoutPlus INSTANCE;
-
-    private ArcheAttribute bleedoutAttribute;
-	
     public int bleedoutTime;
     public boolean mobsUntarget;
     public boolean playersKO;
     public boolean mobsKO;
     public boolean nonMobsKO;
     public boolean protectBlocks;
+    private ArcheAttribute bleedoutAttribute;
     private Map<UUID, Long> recentKos = new HashMap<>();
     private ProtocolManager protocolManager;
 
@@ -63,6 +61,13 @@ public final class KnockoutPlus extends JavaPlugin {
 
     private boolean worldGuardEnabled = false;
 
+    public static KnockoutPlus get() {
+        return INSTANCE;
+    }
+
+    public static boolean isAllowed(Player p, String flagName) {
+        return KnockoutPlus.get().worldGuardEnabled && WorldGuardUtils.isAllowed(p, flagName);
+    }
 
     @Override
     public void onLoad() {
@@ -77,7 +82,7 @@ public final class KnockoutPlus extends JavaPlugin {
     }
 
     @Override
-		public void onEnable() {
+    public void onEnable() {
         Commands.build(getCommand("revive"), () -> new ReviveCommand(this));
         Commands.build(getCommand("knockoutplus"), () -> new KnockoutPlusCommand(this));
 
@@ -100,8 +105,9 @@ public final class KnockoutPlus extends JavaPlugin {
         protectBlocks = getConfig().getBoolean("protect.ko.blocks");
 
         bleedoutAttribute = new ArcheAttribute("bleedout-time", bleedoutTime);
-        if (AttributeRegistry.getInstance().getAttribute(bleedoutAttribute.getName()) == null) AttributeRegistry.getInstance().register(bleedoutAttribute);
-        
+        if (AttributeRegistry.getInstance().getAttribute(bleedoutAttribute.getName()) == null)
+            AttributeRegistry.getInstance().register(bleedoutAttribute);
+
         protocolManager = ProtocolLibrary.getProtocolManager();
         protocolManager.removePacketListeners(this);
 
@@ -115,7 +121,7 @@ public final class KnockoutPlus extends JavaPlugin {
                 for (final Corpse c : corpseRegistry.getCorpses())
                     if (c.getEntityId() == id) {
                         Player p = getServer().getPlayer(c.getVictim());
-                        if (p != null ) {
+                        if (p != null) {
                             Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
                                         Location l = c.getLocation().add(0, 1, 0);
                                         PacketUtils.layDown(p, l);
@@ -130,21 +136,16 @@ public final class KnockoutPlus extends JavaPlugin {
     }
 
     @Override
-		public void onDisable() {
+    public void onDisable() {
         for (Corpse c : corpseRegistry.getCorpses()) {
             Player p = koListener.getPlayer(c.getVictim());
             p.sendMessage(ChatColor.RED + "An evil entity has condemned you.");
-            wake(p, null, false);
+            wake(p, p.getLocation(), false);
             removePlayer(p);
             p.damage(1.0D);
             p.setHealth(0.0D);
         }
         bleedoutTask.cancel();
-    }
-
-
-    public static KnockoutPlus get() {
-        return INSTANCE;
     }
 
     public void removePlayer(Player p) {
@@ -178,9 +179,10 @@ public final class KnockoutPlus extends JavaPlugin {
 
     /**
      * Revived a player from the knockdown state
+     *
      * @param player Player being revived
      * @param helper Person doing the reviving
-     * @param hp Amount of health to revive the player with
+     * @param hp     Amount of health to revive the player with
      */
     public void revivePlayer(Player player, CommandSender helper, double hp) {
         wake(player, player.getLocation(), true);
@@ -192,7 +194,7 @@ public final class KnockoutPlus extends JavaPlugin {
 
         Location l = player.getLocation();
         if (l.getBlock().isLiquid()) { //adds water breathing if player dies in some form of liquid
-        	player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 400, 100));
+            player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 400, 100));
         }
         player.getWorld().spawnParticle(org.bukkit.Particle.HEART, player.getLocation(), 1);
 
@@ -260,7 +262,8 @@ public final class KnockoutPlus extends JavaPlugin {
         }
         final Player player;
         if (cmd.getName().equalsIgnoreCase("reviveall")) {
-            if ((sender.hasPermission("nexus.moderator")) || (!(sender instanceof Player))) corpseRegistry.reviveAll(sender);
+            if ((sender.hasPermission("nexus.moderator")) || (!(sender instanceof Player)))
+                corpseRegistry.reviveAll(sender);
             else
                 sender.sendMessage(ChatColor.RED + "You do not have permission to use this!");
             return true;
@@ -285,15 +288,15 @@ public final class KnockoutPlus extends JavaPlugin {
                 }
             }
         } else if (cmd.getLabel().equalsIgnoreCase("knockout")) {
-        	if (args.length < 1) return false;
+            if (args.length < 1) return false;
             if (args[0].equalsIgnoreCase("list") || args[0].equalsIgnoreCase("l")) {
                 sender.sendMessage(ChatColor.YELLOW + "Current knockouts: ");
-            	String gr = ChatColor.GRAY + "";
+                String gr = ChatColor.GRAY + "";
                 String it = ChatColor.ITALIC + "";
                 for (Corpse c : corpseRegistry.getCorpses()) {
                     sender.sendMessage(gr + it + this.getServer().getOfflinePlayer(c.getVictim()).getName()
-                    		+ gr + " killed by " + it + this.getServer().getOfflinePlayer(c.getKiller()).getName()
-                    		+ gr + " at " + it + c.getLocation().getWorld() + ": " + c.getLocation().getBlockX() + ", " + c.getLocation().getBlockY() + ", " + c.getLocation().getBlockZ());
+                            + gr + " killed by " + it + this.getServer().getOfflinePlayer(c.getKiller()).getName()
+                            + gr + " at " + it + c.getLocation().getWorld() + ": " + c.getLocation().getBlockX() + ", " + c.getLocation().getBlockY() + ", " + c.getLocation().getBlockZ());
                 }
                 if (corpseRegistry.getCorpses().size() < 1) sender.sendMessage(gr + it + "Nobody");
                 return true;
@@ -424,19 +427,15 @@ public final class KnockoutPlus extends JavaPlugin {
         return p.getDisplayName() + ChatColor.GRAY + ChatColor.ITALIC + " (" + p.getName() + ")" + ChatColor.RESET;
     }
 
-    public CorpseRegistry getCorpseRegistry(){
+    public CorpseRegistry getCorpseRegistry() {
         return this.corpseRegistry;
     }
 
-    public Map<UUID,Long> getRecentKos(){
+    public Map<UUID, Long> getRecentKos() {
         return this.recentKos;
     }
 
-    public KOListener getKoListener(){
+    public KOListener getKoListener() {
         return this.koListener;
-    }
-
-    public static boolean isAllowed(Player p, String flagName) {
-        return KnockoutPlus.get().worldGuardEnabled && WorldGuardUtils.isAllowed(p, flagName);
     }
 }
