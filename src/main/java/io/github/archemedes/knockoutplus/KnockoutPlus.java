@@ -1,5 +1,7 @@
 package io.github.archemedes.knockoutplus;
 
+import co.lotc.core.bukkit.util.ChatBuilder;
+import co.lotc.core.bukkit.util.ItemUtil;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.PacketType.Play.Server;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -34,6 +36,7 @@ import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -461,7 +464,18 @@ public final class KnockoutPlus extends JavaPlugin {
     }
 
     void koPlayer(Player p, final Player killer) {
-        p.sendMessage(ChatColor.RED + "You were defeated by " + ChatColor.BOLD + killer.getDisplayName());
+        ItemStack weapon = killer.getInventory().getItemInMainHand();
+        ChatBuilder chatBuilder = new ChatBuilder("");
+        chatBuilder.append("You were defeated by ").color(ChatColor.BOLD).color(ChatColor.RED)
+                .append(killer.getDisplayName()).color(ChatColor.GOLD).hover(killer.getName())
+                .append(" using ").color(ChatColor.RED);
+        if(weapon.getType() != Material.AIR)
+            chatBuilder.append("[").color(ChatColor.RED)
+                    .append(ItemUtil.getDisplayName(weapon)).hoverItem(weapon).color(ChatColor.RED)
+                    .append("]").color(ChatColor.RED);
+        else
+            chatBuilder.append("their fists!");
+        chatBuilder.send(p);
 
         killer.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
         killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to bring them to their feet.");
