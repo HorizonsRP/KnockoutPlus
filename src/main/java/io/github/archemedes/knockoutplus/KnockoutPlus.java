@@ -1,5 +1,7 @@
 package io.github.archemedes.knockoutplus;
 
+import co.lotc.core.bukkit.util.ChatBuilder;
+import co.lotc.core.bukkit.util.ItemUtil;
 import co.lotc.core.bukkit.command.Commands;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -12,9 +14,11 @@ import io.github.archemedes.knockoutplus.commands.ReviveCommand;
 import io.github.archemedes.knockoutplus.corpse.BleedoutTimer;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
+import io.github.archemedes.knockoutplus.corpse.HeadRequestRegistry;
 import io.github.archemedes.knockoutplus.utils.PacketUtils;
 import io.github.archemedes.knockoutplus.utils.WorldGuardUtils;
 import lombok.Getter;
+import net.lordofthecraft.arche.ArcheCore;
 import net.lordofthecraft.arche.attributes.ArcheAttribute;
 import net.lordofthecraft.arche.attributes.AttributeRegistry;
 import net.lordofthecraft.omniscience.api.OmniApi;
@@ -30,6 +34,7 @@ import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -56,6 +61,7 @@ public final class KnockoutPlus extends JavaPlugin {
     private ProtocolManager protocolManager;
 
     private CorpseRegistry corpseRegistry;
+    private HeadRequestRegistry headRequestRegistry;
     private KOListener koListener;
     private BukkitTask bleedoutTask;
 
@@ -89,9 +95,11 @@ public final class KnockoutPlus extends JavaPlugin {
         if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
             OmniApi.registerEvent("down", "downed");
             OmniApi.registerEvent("revive", "revived");
+            OmniApi.registerEvent("decapitate", "decapitated");
         }
 
         corpseRegistry = new CorpseRegistry(this);
+        headRequestRegistry = new HeadRequestRegistry(this);
         koListener = new KOListener(this);
         saveDefaultConfig();
 
@@ -307,6 +315,28 @@ public final class KnockoutPlus extends JavaPlugin {
                 sender.sendMessage(ChatColor.YELLOW + "Environment: " + (nonMobsKO ? ChatColor.GREEN : ChatColor.RED) + nonMobsKO);
                 return true;
             }
+        } else if (cmd.getName().equalsIgnoreCase("koplushead")) {
+            if (!(sender instanceof Player))
+                sender.sendMessage(ChatColor.RED + "This command is only useful to players.");
+            else {
+                if (args.length < 2) {
+                    sender.sendMessage(ChatColor.RED + "Usage: /koplushead [request/send] [player]");
+                } else if (Bukkit.getPlayer(args[1]) == null) {
+                    sender.sendMessage(ChatColor.RED + "Player is offline or doesn't exist.");
+                } else if (args[0].equalsIgnoreCase("request")) {
+                    headRequestRegistry.requestHead((Player) sender, Bukkit.getPlayer(args[1]));
+                } else if (args[0].equalsIgnoreCase("send")) {
+                    Player winner = Bukkit.getPlayer(args[1]);
+                    if (headRequestRegistry.sendHead(winner, (Player) sender)) {
+                        if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
+                            DataWrapper wrapper = DataWrapper.createNew();
+                            wrapper.set(TARGET, sender.getName());
+                            OEntry.create().source(winner).custom("decapitate", wrapper).save();
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
         return false;
@@ -339,7 +369,21 @@ public final class KnockoutPlus extends JavaPlugin {
     }
 
     void koPlayer(Player p, final Player killer) {
-        p.sendMessage(ChatColor.RED + "You were defeated by " + ChatColor.BOLD + killer.getDisplayName());
+        if(ArcheCore.getPersona(killer) == null)
+            return;
+
+        ItemStack weapon = killer.getInventory().getItemInMainHand();
+        ChatBuilder chatBuilder = new ChatBuilder("");
+        chatBuilder.append("You were defeated by ").color(ChatColor.BOLD).color(ChatColor.RED)
+                .append(ArcheCore.getPersona(killer).getName()).color(ChatColor.GOLD).hover(killer.getName())
+                .append(" using ").color(ChatColor.RED);
+        if(weapon.getType() != Material.AIR)
+            chatBuilder.append("[").color(ChatColor.RED)
+                    .append(ItemUtil.getDisplayName(weapon)).hoverItem(weapon)
+                    .append("]").color(ChatColor.RED);
+        else
+            chatBuilder.append("their fists!");
+        chatBuilder.send(p);
 
         killer.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
         killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
@@ -429,6 +473,10 @@ public final class KnockoutPlus extends JavaPlugin {
 
     public CorpseRegistry getCorpseRegistry() {
         return this.corpseRegistry;
+    }
+
+    public HeadRequestRegistry getHeadRequestRegistry(){
+        return this.headRequestRegistry;
     }
 
     public Map<UUID, Long> getRecentKos() {
