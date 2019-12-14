@@ -104,12 +104,12 @@
         <dependency>
             <groupId>net.lordofthecraft</groupId>
             <artifactId>OmniscienceAPI</artifactId>
-            <version>1.0.4</version>
+            <version>1.15-R0.1</version>
         </dependency>
         <dependency>
             <groupId>co.lotc</groupId>
             <artifactId>tythan-bukkit</artifactId>
-            <version>0.6</version>
+            <version>1.15-R0.1</version>
         </dependency>
     </dependencies>
 
