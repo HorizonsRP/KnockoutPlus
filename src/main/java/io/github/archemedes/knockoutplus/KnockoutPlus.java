@@ -19,8 +19,6 @@ import io.github.archemedes.knockoutplus.corpse.CorpseRegistry;
 import io.github.archemedes.knockoutplus.corpse.HeadRequestRegistry;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import lombok.Getter;
-import net.lordofthecraft.arche.attributes.ArcheAttribute;
-import net.lordofthecraft.arche.attributes.AttributeRegistry;
 import net.lordofthecraft.omniscience.api.OmniApi;
 import net.lordofthecraft.omniscience.api.data.DataWrapper;
 import net.lordofthecraft.omniscience.api.entry.OEntry;
@@ -48,8 +46,6 @@ import static net.lordofthecraft.omniscience.api.data.DataKeys.TARGET;
 
 @Getter
 public final class KnockoutPlus extends JavaPlugin {
-    private ArcheAttribute bleedoutAttribute;
-	
     public int bleedoutTime;
     public boolean mobsUntarget;
     public boolean playersKO;
@@ -102,9 +98,6 @@ public final class KnockoutPlus extends JavaPlugin {
         mobsKO = getConfig().getBoolean("mobs.cause.knockout");
         nonMobsKO = getConfig().getBoolean("nonmobs.cause.knockout");
         protectBlocks = getConfig().getBoolean("protect.ko.blocks");
-
-        bleedoutAttribute = new ArcheAttribute("bleedout-time", bleedoutTime);
-        if (AttributeRegistry.getInstance().getAttribute(bleedoutAttribute.getName()) == null) AttributeRegistry.getInstance().register(bleedoutAttribute);
         
         protocol = ProtocolLibrary.getProtocolManager();
         protocol.removePacketListeners(this);

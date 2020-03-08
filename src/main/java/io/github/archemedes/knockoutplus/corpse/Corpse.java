@@ -11,8 +11,6 @@ import org.bukkit.entity.Player;
 
 import io.github.archemedes.knockoutplus.KnockoutPlus;
 import lombok.Getter;
-import net.lordofthecraft.arche.ArcheCore;
-import net.lordofthecraft.arche.interfaces.Persona;
 
 public class Corpse {
 	private final UUID victim;
@@ -37,9 +35,8 @@ public class Corpse {
 		this.where = l;
 		this.when = System.currentTimeMillis();
 		this.plugin = plugin;
-		
-		Persona ps = ArcheCore.getPersona(victim);
-		this.bleedoutTime = ps != null? (long) ps.attributes().getAttributeValue(plugin.getBleedoutAttribute()) : plugin.getBleedoutTime();
+
+		this.bleedoutTime = plugin.getBleedoutTime();
 		long distance = 2 * this.bleedoutTime;
 		
 		allowedRevives = Bukkit.getOnlinePlayers().stream()

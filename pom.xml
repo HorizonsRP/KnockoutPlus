@@ -96,14 +96,9 @@
             <version>3.8</version>
         </dependency>
         <dependency>
-            <groupId>net.lordofthecraft</groupId>
-            <artifactId>BetterTeams</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-        	<groupId>net.lordofthecraft.arche</groupId>
-        	<artifactId>ArcheCore</artifactId>
-        	<version>3.6</version>
+            <groupId>co.lotc</groupId>
+            <artifactId>tythan-bukkit</artifactId>
+            <version>0.7.1</version>
         </dependency>
         <dependency>
             <groupId>net.lordofthecraft</groupId>

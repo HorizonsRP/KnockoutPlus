@@ -1,7 +1,6 @@
 package io.github.archemedes.knockoutplus.corpse;
 
 import io.github.archemedes.knockoutplus.KnockoutPlus;
-import net.lordofthecraft.arche.ArcheCore;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -34,14 +33,11 @@ public class HeadRequest {
     private ItemStack newHeadItem() {
         ItemStack headItem;
         Player loser = Bukkit.getPlayer(this.loser);
-        if (ArcheCore.getPersona(loser).hasSkin()) {
-            headItem = ArcheCore.getPersona(loser).getSkin().getHeadItem();
-        } else {
-            headItem = new ItemStack(Material.PLAYER_HEAD, 1);
-            SkullMeta meta = (SkullMeta) headItem.getItemMeta();
-            meta.setOwningPlayer(loser);
-            headItem.setItemMeta(meta);
-       }
+        headItem = new ItemStack(Material.PLAYER_HEAD, 1);
+        SkullMeta meta = (SkullMeta) headItem.getItemMeta();
+        meta.setOwningPlayer(loser);
+        headItem.setItemMeta(meta);
+
         return headItem;
     }
 

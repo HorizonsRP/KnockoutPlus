@@ -2,7 +2,7 @@ name: KnockoutPlus
 main: io.github.archemedes.knockoutplus.KnockoutPlus
 description: This plugin puts the 'cute' back in execute. Fight to the death or friendly brawl? The choice is yours. 
 version: ${project.version}
-depend: [ProtocolLib, WorldGuard, BetterTeams]
+depend: [ProtocolLib, WorldGuard]
 softdepend: [Omniscience]
 authors: [Arche, Kowaman]
 api-version: 1.13

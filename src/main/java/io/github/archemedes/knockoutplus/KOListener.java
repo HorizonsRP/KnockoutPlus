@@ -363,10 +363,10 @@ public class KOListener implements Listener {
                                         plugin.wakeOne(p);
                                         v.setHealth(0.0D);
                                         p.sendMessage(Tythan.get().chatBuilder()
-                                                .append(ChatColor.BLUE + "To request the victim's head, click on ")
-                                                .appendButton(ChatColor.GOLD + "Request Player Head", "/koplushead request " + v.getName())
-                                                .append(ChatColor.BLUE + " or run the command " + ChatColor.GOLD + "/koplushead request " + v.getName())
-                                                .build()
+                                                            .append(ChatColor.BLUE + "To request the victim's head, click on ")
+                                                            .appendButton(ChatColor.GOLD + "Request Player Head", "/koplushead request " + v.getName())
+                                                            .append(ChatColor.BLUE + " or run the command " + ChatColor.GOLD + "/koplushead request " + v.getName())
+                                                            .build()
                                         );
                                         plugin.getHeadRequestRegistry().register(p, v);
                                     }
