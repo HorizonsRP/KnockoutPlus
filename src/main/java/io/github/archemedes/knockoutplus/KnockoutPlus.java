@@ -128,7 +128,7 @@ public final class KnockoutPlus extends JavaPlugin {
 		public void onDisable() {
         for (Corpse c : corpseRegistry.getCorpses()) {
             Player p = koListener.getPlayer(c.getVictim());
-            p.sendMessage(ChatColor.RED + "An evil entity has condemned you.");
+            p.sendMessage(ChatColor.RED + "You have been condemned.");
             wake(p, null, false);
             removePlayer(p);
             p.damage(1.0D);
@@ -472,7 +472,7 @@ public final class KnockoutPlus extends JavaPlugin {
         p.sendMessage(ChatColor.RED + "You were defeated by " + ChatColor.BOLD + killer.getDisplayName());
 
         killer.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
-        killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to show mercy, or LEFT CLICK to send them to the Monks.");
+        killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to bring them to their feet, or LEFT CLICK to send them off.");
 
         koListener.verdictDelay.add(killer.getUniqueId());
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> koListener.verdictDelay.remove(killer.getUniqueId())

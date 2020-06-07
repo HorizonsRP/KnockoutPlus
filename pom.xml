@@ -98,7 +98,7 @@
         <dependency>
             <groupId>co.lotc</groupId>
             <artifactId>tythan-bukkit</artifactId>
-            <version>0.7.1</version>
+            <version>0.7.2</version>
         </dependency>
         <dependency>
             <groupId>net.lordofthecraft</groupId>

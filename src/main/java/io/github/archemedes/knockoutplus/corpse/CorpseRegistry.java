@@ -57,7 +57,7 @@ public class CorpseRegistry {
                 if (!event.isCancelled()) {
                     plugin.revivePlayer(p, sender, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
 
-                    p.sendMessage(ChatColor.GOLD + "An Aengul smiles upon you.");
+                    p.sendMessage(ChatColor.GOLD + "You get back on your feet, ready to go.");
                     iter.remove();
                     UUID killer = c.getKiller();
                     if (killer != null) kills.remove(killer, entry.getKey());
