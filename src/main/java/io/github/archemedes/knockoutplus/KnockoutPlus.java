@@ -25,6 +25,7 @@ import net.lordofthecraft.omniscience.api.entry.OEntry;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
@@ -190,9 +191,12 @@ public final class KnockoutPlus extends JavaPlugin {
         wake(player, player.getLocation(), true);
         removePlayer(player);
 
-        player.setHealth(Math.min(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue(), hp));
-        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 400, 5, true), true);
-        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 400, 1, true), true);
+        AttributeInstance health = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        if (health != null) {
+            player.setHealth(Math.min(health.getValue(), hp));
+        }
+        player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 400, 5, true, false));
+        player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 400, 1, true, false));
 
         Location l = player.getLocation();
         if (l.getBlock().isLiquid()) { //adds water breathing if player dies in some form of liquid

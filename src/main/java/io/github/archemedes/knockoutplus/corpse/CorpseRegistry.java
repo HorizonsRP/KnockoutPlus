@@ -84,13 +84,14 @@ public class CorpseRegistry {
                 iter.remove();
                 if (c.getKiller() != null) kills.remove(c.getKiller(), c);
                 Player p = plugin.getKoListener().getPlayer(c.getVictim());
-                if (p != null) {
+                plugin.revivePlayer(p, null, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                /*if (p != null) {
                     p.damage(1.0D);
                     plugin.wakeOne(p);
                     p.setHealth(0.0D);
                 } else {
                     Bukkit.getLogger().warning("[KO+] Player was null while we tried to kill: " + c.getVictim());
-                }
+                }*/
             } else if ((diff > u) && (!c.warned)) {
                 c.warned = true;
                 Player p = plugin.getKoListener().getPlayer(c.getVictim());
