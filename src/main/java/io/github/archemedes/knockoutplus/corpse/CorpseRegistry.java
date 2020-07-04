@@ -97,7 +97,7 @@ public class CorpseRegistry {
                 Player p = plugin.getKoListener().getPlayer(c.getVictim());
 
                 if (p != null) {
-                    p.sendMessage(ChatColor.RED + "You are starting to lose consciousness!");
+                    p.sendMessage(ChatColor.RED + "You start trying to pick yourself back up...");
                     p.sendMessage(ChatColor.GREEN.toString());
                 } else {
                     Bukkit.getLogger().warning("[KO+] Player was null while we tried to warn: " + c.getVictim());

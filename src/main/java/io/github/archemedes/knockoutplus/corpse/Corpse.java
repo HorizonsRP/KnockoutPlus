@@ -50,7 +50,7 @@ public class Corpse {
 
 	public boolean allowedToRevive(CommandSender sender) {
 		if(!(sender instanceof Player)) return true;
-		if(sender.hasPermission("archecore.admin")) return true;
+		if(sender.hasPermission("knockoutplus.admin")) return true;
 
 		return allowedRevives.contains(((Player) sender).getUniqueId());
 	}

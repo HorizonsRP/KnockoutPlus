@@ -49,6 +49,8 @@ public class KOListener implements Listener {
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
+    private static final String CORPSE_PRESENT = "Someone's unconscious here. Why not give them a hand?";
+
     KOListener(KnockoutPlus plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
@@ -99,7 +101,7 @@ public class KOListener implements Listener {
             if ((l.getWorld().equals(loc.getWorld())) &&
                     (l.distance(loc) <= 2.0D)) {
                 e.setCancelled(true);
-                e.getPlayer().sendMessage(ChatColor.RED + "Someone is dying here! Have some respect!");
+                e.getPlayer().sendMessage(ChatColor.RED + CORPSE_PRESENT);
                 return;
             }
         }
@@ -115,19 +117,11 @@ public class KOListener implements Listener {
             if ((l.getWorld().equals(loc.getWorld())) &&
                     (l.distance(loc) <= 2.0D)) {
                 e.setCancelled(true);
-                e.getPlayer().sendMessage(ChatColor.RED + "Someone is dying here! Have some respect!");
+                e.getPlayer().sendMessage(ChatColor.RED + CORPSE_PRESENT);
                 return;
             }
         }
     }
-    
-    @EventHandler(ignoreCancelled = true)
-		public void rez(EntityResurrectEvent e) {
-    	if(e.getEntityType() == EntityType.PLAYER) {
-    		Player p = (Player) e.getEntity();
-    		if(plugin.wasRecentlyKnockedOut(p)) e.setCancelled(true);
-    	}
-		}
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerDamage(EntityDamageEvent e) {
@@ -152,7 +146,6 @@ public class KOListener implements Listener {
             return;
         }
 
-        if (plugin.wasRecentlyKnockedOut(p)) return;
         LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
         if (!plugin.nonMobsKO && !(getSet(lp).testState(plugin.getWgPlugin().wrapPlayer(p), plugin.getOTHER_KO())))
             return;
@@ -211,7 +204,6 @@ public class KOListener implements Listener {
             return;
         }
 
-        if (plugin.wasRecentlyKnockedOut(p)) return;
         if (e.getFinalDamage() < p.getHealth()) {
             return;
         }
@@ -312,7 +304,7 @@ public class KOListener implements Listener {
                     Location l = c.getLocation();
                     if ((l.getWorld().equals(loc.getWorld())) && (l.distance(loc) <= 4.0D)) {
                         e.setCancelled(true);
-                        e.getPlayer().sendMessage(ChatColor.RED + "Someone is dying here! Have some respect!");
+                        e.getPlayer().sendMessage(ChatColor.RED + CORPSE_PRESENT);
                         return;
                     }
 
@@ -386,7 +378,7 @@ public class KOListener implements Listener {
                 Bukkit.getPluginManager().callEvent(event);
                 if (event.isCancelled()) return;
 
-                p.sendMessage(ChatColor.GOLD + "You have allowed " + this.plugin.giveName(v) + ChatColor.GOLD + " to live.");
+                p.sendMessage(ChatColor.GOLD + "You have helped " + this.plugin.giveName(v) + ChatColor.GOLD + " back up.");
                 plugin.revivePlayer(v, p, 4.0D);
                 c.unregister();
 
@@ -429,7 +421,7 @@ public class KOListener implements Listener {
                 killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + " should've thought twice about challenging you.";
                 break;
             case 7:
-                killMsg = ChatColor.GOLD + "It's a one-way trip to the Monks for " + v.getDisplayName();
+                killMsg = ChatColor.GOLD + "It's a one-way trip to Mevvet for " + v.getDisplayName();
                 break;
             case 8:
                 killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + "'s weakness will taint the planes no more.";
@@ -448,7 +440,7 @@ public class KOListener implements Listener {
                 deathMsg = ChatColor.BLUE + "The merciless " + this.plugin.giveName(p) + ChatColor.BLUE + " has stricken you down.";
                 break;
             case 2:
-                deathMsg = ChatColor.BLUE + "The Monks will know that " + this.plugin.giveName(p) + ChatColor.BLUE + " has sent you.";
+                deathMsg = ChatColor.BLUE + "The Gods will know that " + this.plugin.giveName(p) + ChatColor.BLUE + " has sent you.";
                 break;
             case 3:
                 deathMsg = ChatColor.RED + "" + this.plugin.giveName(p) + ChatColor.RED + " deemed you unfit to live.";

@@ -66,6 +66,8 @@ public final class KnockoutPlus extends JavaPlugin {
     private final StateFlag MOB_KO = new StateFlag("mob-knockout", true);
     private final StateFlag OTHER_KO = new StateFlag("environment-knockout", true);
 
+    private static final String KNOCKED_OUT = "You have been knocked out for a short while...";
+
     @Override
     public void onLoad() {
         FlagRegistry registry = WorldGuard.getInstance().getFlagRegistry();
@@ -129,11 +131,10 @@ public final class KnockoutPlus extends JavaPlugin {
 		public void onDisable() {
         for (Corpse c : corpseRegistry.getCorpses()) {
             Player p = koListener.getPlayer(c.getVictim());
-            p.sendMessage(ChatColor.RED + "You have been condemned.");
+            p.sendMessage(ChatColor.RED + "You've picked yourself up.");
             wake(p, null, false);
             removePlayer(p);
-            p.damage(1.0D);
-            p.setHealth(0.0D);
+            revivePlayer(p, null, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
         }
         bleedoutTask.cancel();
     }
@@ -143,16 +144,6 @@ public final class KnockoutPlus extends JavaPlugin {
         Corpse c = corpseRegistry.getCorpse(p);
         Location l = c.getLocation();
         p.sendBlockChange(l, l.getBlock().getBlockData());
-    }
-
-    boolean wasRecentlyKnockedOut(Player p) {
-        UUID u = p.getUniqueId();
-        if (recentKos.containsKey(u)) {
-            long time = System.currentTimeMillis();
-            return time < recentKos.get(u) + 600000L;
-        }
-
-        return false;
     }
 
     void wake(Player v, Location l, boolean updateBlock) {
@@ -287,7 +278,7 @@ public final class KnockoutPlus extends JavaPlugin {
             
             Player killer = koListener.getPlayer(corpse.getKiller());
             if(!(sender instanceof Player)
-                || ( Arrays.stream(args).anyMatch(x-> StringUtils.equalsAny(x, "gm", "-gm")) && sender.hasPermission("archecore.mod"))) {
+                || ( Arrays.stream(args).anyMatch(x-> StringUtils.equalsAny(x, "gm", "-gm")) && sender.hasPermission("knockoutplus.mod"))) {
                 PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
                 Bukkit.getPluginManager().callEvent(event);
                 if (!event.isCancelled()) {
@@ -310,7 +301,7 @@ public final class KnockoutPlus extends JavaPlugin {
             }
 
             if (player.equals(target)) {
-                sender.sendMessage(ChatColor.RED + "You cannot revive yourself!");
+                sender.sendMessage(ChatColor.RED + "You cannot pick yourself back up!");
                 return true;
             }
 
@@ -357,14 +348,11 @@ public final class KnockoutPlus extends JavaPlugin {
                                 if (event.isCancelled()) return;
 
                                 player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 1.2F, 1.0F);
-                                player.sendMessage(ChatColor.GOLD + "You have saved " + giveName(target) + ChatColor.GOLD + " from a grisly fate.");
-                                target.sendMessage(ChatColor.GOLD + "You have been saved, but you still feel weak");
-                                target.sendMessage(ChatColor.DARK_RED + "Caution: Being incapacitated again shall mean your demise.");
+                                player.sendMessage(ChatColor.GOLD + "You have picked " + giveName(target) + ChatColor.GOLD + " back up.");
+                                target.sendMessage(ChatColor.GOLD + "You have been picked up, but you still feel weak");
 
                                 revivePlayer(target, sender, 4.0D);
                                 corpse.unregister();
-
-                                recentKos.put(target.getUniqueId(), System.currentTimeMillis());
                             }
                     }
                     , 100L);
@@ -375,12 +363,12 @@ public final class KnockoutPlus extends JavaPlugin {
             }
             return true;
         } else if (cmd.getName().equalsIgnoreCase("reviveall")) {
-            if ((sender.hasPermission("nexus.moderator")) || (!(sender instanceof Player))) corpseRegistry.reviveAll(sender);
+            if ((sender.hasPermission("knockoutplus.mod")) || (!(sender instanceof Player))) corpseRegistry.reviveAll(sender);
             else
                 sender.sendMessage(ChatColor.RED + "You do not have permission to use this!");
             return true;
         } else if (cmd.getName().equalsIgnoreCase("togglerevive")) {
-            if ((args.length == 1) && ((sender.hasPermission("nexus.moderator")))) {
+            if ((args.length == 1) && ((sender.hasPermission("knockoutplus.mod")))) {
                 if (args[0].equalsIgnoreCase("players")) {
                     playersKO = !playersKO;
                     sender.sendMessage("Player knockout toggled to: " + ChatColor.AQUA + nonMobsKO);
@@ -447,7 +435,7 @@ public final class KnockoutPlus extends JavaPlugin {
     }
 
     void koPlayer(Player p) {
-        p.sendMessage(ChatColor.RED + "You have been knocked out and will die if not aided!");
+        p.sendMessage(ChatColor.RED + KNOCKED_OUT);
         p.sendMessage(String.valueOf(ChatColor.DARK_GREEN));
 
         if (p.getFoodLevel() < 3) {
@@ -460,7 +448,7 @@ public final class KnockoutPlus extends JavaPlugin {
     }
 
     void koPlayer(Player p, Entity killer) {
-        p.sendMessage(ChatColor.RED + "You have been knocked out and will die if not aided!");
+        p.sendMessage(ChatColor.RED + KNOCKED_OUT);
         p.sendMessage(String.valueOf(ChatColor.DARK_GREEN));
 
         if (p.getFoodLevel() < 3) {
@@ -476,7 +464,7 @@ public final class KnockoutPlus extends JavaPlugin {
         p.sendMessage(ChatColor.RED + "You were defeated by " + ChatColor.BOLD + killer.getDisplayName());
 
         killer.sendMessage(ChatColor.GOLD + "You have defeated " + ChatColor.BOLD + p.getDisplayName());
-        killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to bring them to their feet, or LEFT CLICK to send them off.");
+        killer.sendMessage(String.valueOf(ChatColor.BLUE) + ChatColor.BOLD + "RIGHT CLICK to bring them to their feet.");
 
         koListener.verdictDelay.add(killer.getUniqueId());
         Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> koListener.verdictDelay.remove(killer.getUniqueId())
@@ -614,10 +602,6 @@ public final class KnockoutPlus extends JavaPlugin {
 
     public StateFlag getMOB_KO(){
         return this.MOB_KO;
-    }
-
-    public Map<UUID,Long> getRecentKos(){
-        return this.recentKos;
     }
 
     public KOListener getKoListener(){
