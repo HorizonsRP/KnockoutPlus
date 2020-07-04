@@ -553,6 +553,7 @@ public final class KnockoutPlus extends JavaPlugin {
             t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BLACK_BED.createBlockData());
         }
 
+        // TODO - Update packet type here to new packets with protocol lib
         PacketContainer packet = new PacketContainer(PacketType.Play.Server.BED);
         packet.getIntegers().write(0, p.getEntityId());
         packet.getBlockPositionModifier().write(0, new BlockPosition(l.getBlockX(), 0, l.getBlockZ()));
