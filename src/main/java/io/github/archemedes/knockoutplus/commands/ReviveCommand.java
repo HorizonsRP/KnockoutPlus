@@ -29,7 +29,7 @@ public class ReviveCommand extends CommandTemplate {
 
 		final Corpse corpse = plugin.getCorpseRegistry().getCorpse(target);
 		Player killer = plugin.getKoListener().getPlayer(corpse.getKiller());
-		if (!(sender instanceof Player) || (hasFlag("gm") && sender.hasPermission("archecore.mod"))) {
+		if (!(sender instanceof Player) || (hasFlag("gm") && sender.hasPermission("knockoutplus.mod"))) {
 			PlayerReviveEvent event = new PlayerReviveEvent(null, target, PlayerReviveEvent.Reason.OPERATOR);
 			Bukkit.getPluginManager().callEvent(event);
 			if (!event.isCancelled()) {

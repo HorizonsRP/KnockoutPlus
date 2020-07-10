@@ -1,10 +1,20 @@
 package io.github.archemedes.knockoutplus;
 
+import co.lotc.core.Tythan;
+import com.sk89q.worldguard.LocalPlayer;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
 import io.github.archemedes.knockoutplus.utils.PacketUtils;
 import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -12,8 +22,17 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.*;
-import org.bukkit.event.entity.*;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityResurrectEvent;
+import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -31,6 +50,8 @@ public class KOListener implements Listener {
     public HashMap<UUID, Integer> chants = new HashMap<>();
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
+
+    private static final String CORPSE_PRESENT = "Someone's unconscious here. Why not give them a hand?";
 
     KOListener(KnockoutPlus plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -55,8 +76,8 @@ public class KOListener implements Listener {
         if (plugin.getCorpseRegistry().isKnockedOut(p)) {
             String msg = e.getMessage();
             if ((!p.isOp()) &&
-                    (!msg.startsWith("/tell ")) && (!msg.startsWith("/damage ")) && (!msg.startsWith("/modreq ")) && (!msg.startsWith("/check ")) &&
-                    (!msg.startsWith("/t ")) && (!msg.startsWith("/d20")) && (!msg.startsWith("/d48")) && (!msg.startsWith("/msg ")) && (!msg.startsWith("/modlist ")) &&
+                    (!msg.startsWith("/tell ")) && (!msg.startsWith("/damage ")) && (!msg.startsWith("/request ")) && (!msg.startsWith("/check ")) &&
+                    (!msg.startsWith("/t ")) && (!msg.startsWith("/msg ")) && (!msg.startsWith("/list ")) &&
                     (!msg.startsWith("/m ")) && (!msg.startsWith("/s ")) && (!msg.startsWith("/w ")) && (!msg.startsWith("/whisper ")) &&
                     (!msg.startsWith("/reply ")) && (!msg.startsWith("/r ")))
                 e.setCancelled(true);
@@ -82,7 +103,7 @@ public class KOListener implements Listener {
             if ((l.getWorld().equals(loc.getWorld())) &&
                     (l.distance(loc) <= 2.0D)) {
                 e.setCancelled(true);
-                e.getPlayer().sendMessage(ChatColor.RED + "Someone is dying here! Have some respect!");
+                e.getPlayer().sendMessage(ChatColor.RED + CORPSE_PRESENT);
                 return;
             }
         }
@@ -98,19 +119,11 @@ public class KOListener implements Listener {
             if ((l.getWorld().equals(loc.getWorld())) &&
                     (l.distance(loc) <= 2.0D)) {
                 e.setCancelled(true);
-                e.getPlayer().sendMessage(ChatColor.RED + "Someone is dying here! Have some respect!");
+                e.getPlayer().sendMessage(ChatColor.RED + CORPSE_PRESENT);
                 return;
             }
         }
     }
-    
-    @EventHandler(ignoreCancelled = true)
-		public void rez(EntityResurrectEvent e) {
-    	if(e.getEntityType() == EntityType.PLAYER) {
-    		Player p = (Player) e.getEntity();
-    		if(plugin.wasRecentlyKnockedOut(p)) e.setCancelled(true);
-    	}
-		}
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerDamage(EntityDamageEvent e) {
@@ -134,8 +147,6 @@ public class KOListener implements Listener {
             e.setCancelled(true);
             return;
         }
-
-        if (plugin.wasRecentlyKnockedOut(p)) return;
 
         if (!plugin.nonMobsKO && KnockoutPlus.isAllowed(p, "mob-knockout")) {
             return;
@@ -171,7 +182,7 @@ public class KOListener implements Listener {
     			|| i.getItemInOffHand().getType() == Material.TOTEM_OF_UNDYING;
     }
     
-    @EventHandler
+    @EventHandler(priority=EventPriority.LOWEST)
     public void onPlayerLog(PlayerQuitEvent e) {
         Player p = e.getPlayer();
         Corpse c = plugin.getCorpseRegistry().getCorpse(p);
@@ -194,7 +205,6 @@ public class KOListener implements Listener {
             return;
         }
 
-        if (plugin.wasRecentlyKnockedOut(p)) return;
         if (e.getFinalDamage() < p.getHealth()) {
             return;
         }
@@ -293,7 +303,7 @@ public class KOListener implements Listener {
                     Location l = c.getLocation();
                     if ((l.getWorld().equals(loc.getWorld())) && (l.distance(loc) <= 4.0D)) {
                         e.setCancelled(true);
-                        e.getPlayer().sendMessage(ChatColor.RED + "Someone is dying here! Have some respect!");
+                        e.getPlayer().sendMessage(ChatColor.RED + CORPSE_PRESENT);
                         return;
                     }
 
@@ -343,6 +353,13 @@ public class KOListener implements Listener {
                                         v.damage(1.0D, p);
                                         PacketUtils.wakeup(p);
                                         v.setHealth(0.0D);
+                                        p.sendMessage(Tythan.get().chatBuilder()
+                                                            .append(ChatColor.BLUE + "To request the victim's head, click on ")
+                                                            .appendButton(ChatColor.GOLD + "Request Player Head", "/koplushead request " + v.getName())
+                                                            .append(ChatColor.BLUE + " or run the command " + ChatColor.GOLD + "/koplushead request " + v.getName())
+                                                            .build()
+                                        );
+                                        plugin.getHeadRequestRegistry().register(p, v);
                                     }
                             }
                             , 40L);
@@ -360,7 +377,7 @@ public class KOListener implements Listener {
                 Bukkit.getPluginManager().callEvent(event);
                 if (event.isCancelled()) return;
 
-                p.sendMessage(ChatColor.GOLD + "You have allowed " + this.plugin.giveName(v) + ChatColor.GOLD + " to live.");
+                p.sendMessage(ChatColor.GOLD + "You have helped " + this.plugin.giveName(v) + ChatColor.GOLD + " back up.");
                 plugin.revivePlayer(v, p, 4.0D);
                 c.unregister();
 
@@ -403,7 +420,7 @@ public class KOListener implements Listener {
                 killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + " should've thought twice about challenging you.";
                 break;
             case 7:
-                killMsg = ChatColor.GOLD + "It's a one-way trip to the Monks for " + v.getDisplayName();
+                killMsg = ChatColor.GOLD + "It's a one-way trip to Mevvet for " + v.getDisplayName();
                 break;
             case 8:
                 killMsg = ChatColor.GOLD + "" + v.getDisplayName() + ChatColor.GOLD + "'s weakness will taint the planes no more.";
@@ -422,7 +439,7 @@ public class KOListener implements Listener {
                 deathMsg = ChatColor.BLUE + "The merciless " + this.plugin.giveName(p) + ChatColor.BLUE + " has stricken you down.";
                 break;
             case 2:
-                deathMsg = ChatColor.BLUE + "The Monks will know that " + this.plugin.giveName(p) + ChatColor.BLUE + " has sent you.";
+                deathMsg = ChatColor.BLUE + "The Gods will know that " + this.plugin.giveName(p) + ChatColor.BLUE + " has sent you.";
                 break;
             case 3:
                 deathMsg = ChatColor.RED + "" + this.plugin.giveName(p) + ChatColor.RED + " deemed you unfit to live.";
