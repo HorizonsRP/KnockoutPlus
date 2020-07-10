@@ -145,7 +145,6 @@ public final class KnockoutPlus extends JavaPlugin {
         for (Corpse c : corpseRegistry.getCorpses()) {
             Player p = koListener.getPlayer(c.getVictim());
             p.sendMessage(ChatColor.RED + "You've picked yourself up.");
-            wake(p, p.getLocation(), false);
             revivePlayer(p, null, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
         }
         bleedoutTask.cancel();
