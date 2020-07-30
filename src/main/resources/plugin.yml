@@ -2,9 +2,9 @@ name: KnockoutPlus
 main: io.github.archemedes.knockoutplus.KnockoutPlus
 description: This plugin puts the 'cute' back in execute. Fight to the death or friendly brawl? The choice is yours. 
 version: ${project.version}
-depend: [ProtocolLib, WorldGuard]
-softdepend: [Omniscience]
-authors: [Arche, Kowaman]
+depend: [ProtocolLib, Tythan, RPPersonas]
+softdepend: [Omniscience, WorldGuard]
+authors: [Arche, Kowaman, Korvic]
 api-version: 1.13
 
 commands:
@@ -27,15 +27,12 @@ commands:
      aliases: [d40, d48]
    togglerevive:
       description: This command lets you assist a knocked out character.
-      permission: archecore.mod
+      permission: knockoutplus.mod
       usage: /togglerevive [mobs/environment/players/all]
-   knockout:
+   knockoutplus:
       description: List current KOs and status of flags.
       permission: knockoutplus.knockout
       aliases: [knockoutplus, kp, ko]
       usage: /<command> [list/status]
    wcstats:
      description: Stats for war team
-   koplushead:
-     description: Request or send player heads
-     usage: /koplushead [request/send] [player]

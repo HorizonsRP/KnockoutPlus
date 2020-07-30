@@ -4,11 +4,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
 import io.github.archemedes.knockoutplus.KnockoutPlus;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,6 +11,8 @@ import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import java.util.*;
 
 @Getter
 public class CorpseRegistry {
@@ -87,7 +84,7 @@ public class CorpseRegistry {
                 plugin.revivePlayer(p, null, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
                 /*if (p != null) {
                     p.damage(1.0D);
-                    plugin.wakeOne(p);
+                    plugin.wake(p, p.getLocation(), false);
                     p.setHealth(0.0D);
                 } else {
                     Bukkit.getLogger().warning("[KO+] Player was null while we tried to kill: " + c.getVictim());

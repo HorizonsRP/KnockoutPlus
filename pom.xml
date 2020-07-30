@@ -12,13 +12,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <distributionManagement>
-        <repository>
-            <id>lotc-release</id>
-            <url>https://repo.lordofthecraft.net/artifactory/lotc-releases/</url>
-        </repository>
-    </distributionManagement>
-
     <repositories>
         <repository>
             <id>paper-repo</id>
@@ -42,6 +35,12 @@
         <dependency>
             <groupId>com.destroystokyo.paper</groupId>
             <artifactId>paper-api</artifactId>
+            <version>1.16.1-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot</artifactId>
             <version>1.16.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -91,26 +90,26 @@
             <version>1.18.2</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.8</version>
+            <groupId>net.lordofthecraft</groupId>
+            <artifactId>OmniscienceAPI</artifactId>
+            <version>1.16.0.1</version>
         </dependency>
         <dependency>
             <groupId>co.lotc</groupId>
             <artifactId>tythan-bukkit</artifactId>
-            <version>0.7.3</version>
+            <version>0.7.6</version>
         </dependency>
         <dependency>
-            <groupId>net.lordofthecraft</groupId>
-            <artifactId>OmniscienceAPI</artifactId>
-            <version>1.16.0.1</version>
+            <groupId>net.korvic</groupId>
+            <artifactId>rppersonas</artifactId>
+            <version>1.16.0.6</version>
         </dependency>
     </dependencies>
 
     <build>
         <defaultGoal>clean package install</defaultGoal>
         <sourceDirectory>src/main/java</sourceDirectory>
-        <finalName>${project.name}</finalName>
+        <finalName>${project.name}-${project.version}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

@@ -8,6 +8,8 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import io.github.archemedes.knockoutplus.corpse.Corpse;
 import io.github.archemedes.knockoutplus.events.PlayerExecuteEvent;
 import io.github.archemedes.knockoutplus.events.PlayerReviveEvent;
+import io.github.archemedes.knockoutplus.utils.PacketUtils;
+import org.bukkit.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -45,7 +47,7 @@ import java.util.UUID;
 
 public class KOListener implements Listener {
     ArrayList<UUID> verdictDelay = new ArrayList<>();
-    HashMap<UUID, Integer> chants = new HashMap<>();
+    public HashMap<UUID, Integer> chants = new HashMap<>();
     private final Random rnd = new Random();
     private final KnockoutPlus plugin;
 
@@ -74,8 +76,8 @@ public class KOListener implements Listener {
         if (plugin.getCorpseRegistry().isKnockedOut(p)) {
             String msg = e.getMessage();
             if ((!p.isOp()) &&
-                    (!msg.startsWith("/tell ")) && (!msg.startsWith("/damage ")) && (!msg.startsWith("/modreq ")) && (!msg.startsWith("/check ")) &&
-                    (!msg.startsWith("/t ")) && (!msg.startsWith("/d20")) && (!msg.startsWith("/d48")) && (!msg.startsWith("/msg ")) && (!msg.startsWith("/modlist ")) &&
+                    (!msg.startsWith("/tell ")) && (!msg.startsWith("/damage ")) && (!msg.startsWith("/request ")) && (!msg.startsWith("/check ")) &&
+                    (!msg.startsWith("/t ")) && (!msg.startsWith("/msg ")) && (!msg.startsWith("/list ")) &&
                     (!msg.startsWith("/m ")) && (!msg.startsWith("/s ")) && (!msg.startsWith("/w ")) && (!msg.startsWith("/whisper ")) &&
                     (!msg.startsWith("/reply ")) && (!msg.startsWith("/r ")))
                 e.setCancelled(true);
@@ -134,7 +136,7 @@ public class KOListener implements Listener {
             if (plugin.getCorpseRegistry().isKnockedOut(p) && (e.getDamage() >= p.getHealth())) {
                 plugin.getCorpseRegistry().getCorpse(p).unregister();
                 p.damage(1.0D);
-                plugin.wakeOne(p);
+                PacketUtils.wakeup(p);
                 p.setHealth(0.0D);
             }
 
@@ -146,10 +148,9 @@ public class KOListener implements Listener {
             return;
         }
 
-        LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
-        if (!plugin.nonMobsKO && !(getSet(lp).testState(plugin.getWgPlugin().wrapPlayer(p), plugin.getOTHER_KO())))
+        if (!plugin.nonMobsKO && KnockoutPlus.isAllowed(p, "mob-knockout")) {
             return;
-
+        }
         if ((e.getCause() == EntityDamageEvent.DamageCause.LAVA) || (e.getCause() == EntityDamageEvent.DamageCause.WITHER)) {
             return;
         }
@@ -212,12 +213,10 @@ public class KOListener implements Listener {
         if (trueDamage < p.getHealth() - 0.1D){
             return;
         }
-        
-        LocalPlayer lp = WorldGuardPlugin.inst().wrapPlayer(p);
-        ApplicableRegionSet set = getSet(lp);
+
         Entity killer = e.getDamager();
         if ((killer instanceof Player || (killer instanceof Projectile && ((Projectile) killer).getShooter() instanceof Player))) {
-            if (plugin.playersKO && set.testState(lp, plugin.getPLAYER_KO())) {
+            if (plugin.playersKO && KnockoutPlus.isAllowed(p, "player-knockout")) {
             	Player k = killer instanceof Projectile ? (Player) ((Projectile) killer).getShooter() : (Player) killer;
                 this.plugin.koPlayer(p, k);
                 e.setCancelled(true);
@@ -225,7 +224,7 @@ public class KOListener implements Listener {
             return;
         }
         
-        if (!holdingTotem(p) && plugin.mobsKO && set.testState(lp, plugin.getMOB_KO())) {
+        if (!holdingTotem(p) && KnockoutPlus.isAllowed(p, "environment-knockout")) {
             e.setCancelled(true);
             this.plugin.koPlayer(p, e.getDamager());
         }
@@ -234,7 +233,7 @@ public class KOListener implements Listener {
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player p = event.getEntity();
-        plugin.wakeOne(p);
+        PacketUtils.wakeup(p);
         plugin.getRecentKos().remove(event.getEntity().getUniqueId());
         event.setDeathMessage(null);
 
@@ -352,7 +351,7 @@ public class KOListener implements Listener {
                                         plugin.removePlayer(v);
                                         plugin.getCorpseRegistry().getCorpse(v).unregister();
                                         v.damage(1.0D, p);
-                                        plugin.wakeOne(p);
+                                        PacketUtils.wakeup(p);
                                         v.setHealth(0.0D);
                                         p.sendMessage(Tythan.get().chatBuilder()
                                                             .append(ChatColor.BLUE + "To request the victim's head, click on ")
@@ -480,10 +479,5 @@ public class KOListener implements Listener {
                 event.setCancelled(true);
             }
         }
-    }
-
-
-    private ApplicableRegionSet getSet(LocalPlayer player) {
-        return WorldGuard.getInstance().getPlatform().getRegionContainer().createQuery().getApplicableRegions(player.getLocation());
     }
 }
