@@ -97,19 +97,19 @@
         <dependency>
             <groupId>co.lotc</groupId>
             <artifactId>tythan-bukkit</artifactId>
-            <version>0.7.3</version>
+            <version>0.7.6</version>
         </dependency>
         <dependency>
             <groupId>net.korvic</groupId>
             <artifactId>rppersonas</artifactId>
-            <version>1.16.0.1</version>
+            <version>1.16.0.6</version>
         </dependency>
     </dependencies>
 
     <build>
         <defaultGoal>clean package install</defaultGoal>
         <sourceDirectory>src/main/java</sourceDirectory>
-        <finalName>${project.name}</finalName>
+        <finalName>${project.name}-${project.version}</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>

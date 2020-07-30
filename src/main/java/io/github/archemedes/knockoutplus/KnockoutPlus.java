@@ -40,6 +40,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -145,7 +146,10 @@ public final class KnockoutPlus extends JavaPlugin {
         for (Corpse c : corpseRegistry.getCorpses()) {
             Player p = koListener.getPlayer(c.getVictim());
             p.sendMessage(ChatColor.RED + "You've picked yourself up.");
-            revivePlayer(p, null, p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+            @Nullable AttributeInstance attribute = p.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+            if (attribute != null) {
+                revivePlayer(p, null, attribute.getValue());
+            }
         }
         bleedoutTask.cancel();
     }
