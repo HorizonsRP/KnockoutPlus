@@ -330,7 +330,7 @@ public class KOListener implements Listener {
                 Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> plugin.getKoListener().verdictDelay.remove(p.getUniqueId())
                     , 25L);
 
-                if ((e.getAction() == Action.LEFT_CLICK_BLOCK) || (e.getAction() == Action.LEFT_CLICK_AIR)) {
+                /*if ((e.getAction() == Action.LEFT_CLICK_BLOCK) || (e.getAction() == Action.LEFT_CLICK_AIR)) {
                     announceKill(p, v);
                     p.sendMessage(String.valueOf(ChatColor.GOLD) + ChatColor.BOLD + "(Hold still or your action will be interrupted.)");
                     p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW_DIGGING, 40, 80, true));
@@ -369,7 +369,7 @@ public class KOListener implements Listener {
                     Bukkit.getScheduler().cancelTask(oldTaskId);
 
                     break;
-                }
+                }*/
                 if ((e.getAction() != Action.RIGHT_CLICK_BLOCK) && (e.getAction() != Action.RIGHT_CLICK_AIR)) {
                     break;
                 }
