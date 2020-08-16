@@ -458,7 +458,8 @@ public final class KnockoutPlus extends JavaPlugin {
     }
 
     public String giveName(Player p) {
-        return p.getDisplayName() + ChatColor.GRAY + ChatColor.ITALIC + " (" + p.getName() + ")" + ChatColor.RESET;
+        String rpName = RPPersonas.get().getPersonaHandler().getLoadedPersona(p).getNickName();
+        return rpName + ChatColor.GRAY + ChatColor.ITALIC + " (" + p.getName() + ")" + ChatColor.RESET;
     }
 
     public CorpseRegistry getCorpseRegistry() {

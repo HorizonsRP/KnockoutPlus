@@ -39,8 +39,6 @@ public class ReviveCommand extends CommandTemplate {
 			return;
 		}
 
-		validate(corpse.allowedToRevive(sender), "You don't know how " + GOLD + target.getName() + RED + " was knock out. You can not help them!");
-
 		Player player = (Player) sender;
 
 		validate(!plugin.getCorpseRegistry().isKnockedOut(player), "You are currently knocked out!");
@@ -79,16 +77,12 @@ public class ReviveCommand extends CommandTemplate {
 							Bukkit.getPluginManager().callEvent(event);
 							if (event.isCancelled()) return;
 
-							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 1.2F, 1.0F);
-							player.sendMessage(ChatColor.GOLD + "You have saved " + plugin.giveName(target) + ChatColor.GOLD + " from a grisly fate.");
-
-							target.sendMessage(ChatColor.GOLD + "You have been saved, but you still feel weak");
-							target.sendMessage(ChatColor.DARK_RED + "Caution: Being incapacitated again shall mean your demise.");
+							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 0.9F, 0.7F);
+							player.sendMessage(ChatColor.GOLD + plugin.giveName(target) + ChatColor.GOLD + " takes your hand, rising to their feet once more.");
+							target.sendMessage(ChatColor.GOLD + "You take " + plugin.giveName(player) + ChatColor.GOLD + "'s hand up, but you still feel weak.");
 
 							plugin.revivePlayer(target, sender, 4.0D);
 							corpse.unregister();
-
-							plugin.getRecentKos().put(target.getUniqueId(), System.currentTimeMillis());
 						}
 				}
 				, 100L);

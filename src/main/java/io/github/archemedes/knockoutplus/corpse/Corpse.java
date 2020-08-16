@@ -21,8 +21,6 @@ public class Corpse {
 	@Getter private final long bleedoutTime;
 	boolean warned = false;
 	private KnockoutPlus plugin;
-	
-	private final Set<UUID> allowedRevives;
 
 	public Corpse(Player victim, Location l, KnockoutPlus plugin) {
 		this(victim, null, l, plugin);
@@ -38,21 +36,6 @@ public class Corpse {
 
 		this.bleedoutTime = plugin.getBleedoutTime();
 		long distance = 2 * this.bleedoutTime;
-		
-		allowedRevives = Bukkit.getOnlinePlayers().stream()
-			.filter(p->p.getWorld() == l.getWorld())
-			.filter(p->p.getLocation().distanceSquared(where) < distance * distance)
-			.filter(victim::canSee)
-			.filter(p-> p != victim)
-			.map(Player::getUniqueId)
-			.collect(Collectors.toSet());
-	}
-
-	public boolean allowedToRevive(CommandSender sender) {
-		if(!(sender instanceof Player)) return true;
-		if(sender.hasPermission("knockoutplus.admin")) return true;
-
-		return allowedRevives.contains(((Player) sender).getUniqueId());
 	}
 	
 	public UUID getVictim() {
