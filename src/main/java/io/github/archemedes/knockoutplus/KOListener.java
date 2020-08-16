@@ -35,6 +35,7 @@ import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
@@ -65,6 +66,14 @@ public class KOListener implements Listener {
             }
         }
         return null;
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onMoveEvent(PlayerMoveEvent e) {
+        Player p = e.getPlayer();
+        if (plugin.getCorpseRegistry().isKnockedOut(p)) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
