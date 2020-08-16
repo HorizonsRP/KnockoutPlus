@@ -31,6 +31,13 @@ public class CorpseRegistry {
         UUID uuid = p.getUniqueId();
         Corpse c = new Corpse(p, l, plugin);
         victims.put(uuid, c);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                movementStopped.add(uuid);
+            }
+        }.runTaskLaterAsynchronously(plugin, 5);
+
         return c;
     }
 
