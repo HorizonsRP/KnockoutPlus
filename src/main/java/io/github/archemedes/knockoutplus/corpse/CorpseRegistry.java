@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
@@ -18,6 +19,7 @@ import java.util.*;
 public class CorpseRegistry {
     final Map<UUID, Corpse> victims = Maps.newHashMap();
     final HashMultimap<UUID, Corpse> kills = HashMultimap.create();
+    final List<UUID> movementStopped = new ArrayList<>();
     private KnockoutPlus plugin;
 
     public CorpseRegistry(KnockoutPlus plugin) {
@@ -38,6 +40,14 @@ public class CorpseRegistry {
         Corpse c = new Corpse(player, killerUUID, l, plugin);
         victims.put(playerUUID, c);
         kills.put(killerUUID, c);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                movementStopped.add(playerUUID);
+            }
+        }.runTaskLaterAsynchronously(plugin, 5);
+
         return c;
     }
 
@@ -105,6 +115,10 @@ public class CorpseRegistry {
 
     public boolean isKnockedOut(Player p) {
         return victims.containsKey(p.getUniqueId());
+    }
+
+    public boolean isMovementStopped(Player p) {
+        return movementStopped.contains(p.getUniqueId());
     }
 
     public Corpse getCorpse(Player p) {

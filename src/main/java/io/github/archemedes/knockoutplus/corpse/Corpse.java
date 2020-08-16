@@ -64,6 +64,7 @@ public class Corpse {
 
 	public void unregister() {
 		plugin.getCorpseRegistry().victims.remove(this.victim);
+		plugin.getCorpseRegistry().movementStopped.remove(this.victim);
 		if (this.killer != null) plugin.getCorpseRegistry().kills.remove(this.killer, this);
 	}
 }

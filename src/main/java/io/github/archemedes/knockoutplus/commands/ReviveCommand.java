@@ -79,7 +79,7 @@ public class ReviveCommand extends CommandTemplate {
 
 							player.getWorld().playSound(player.getLocation(), Sound.ENTITY_ZOMBIE_VILLAGER_CURE, 0.9F, 0.7F);
 							player.sendMessage(ChatColor.GOLD + plugin.giveName(target) + ChatColor.GOLD + " takes your hand, rising to their feet once more.");
-							target.sendMessage(ChatColor.GOLD + "You take " + plugin.giveName(player) + ChatColor.GOLD + "'s hand up, but you still feel weak.");
+							target.sendMessage(ChatColor.GOLD + "You take " + plugin.giveName(player) + ChatColor.GOLD + "'s hand, rising to your feet.");
 
 							plugin.revivePlayer(target, sender, 4.0D);
 							corpse.unregister();
