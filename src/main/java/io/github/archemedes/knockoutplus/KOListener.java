@@ -71,7 +71,7 @@ public class KOListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onMoveEvent(PlayerMoveEvent e) {
         Player p = e.getPlayer();
-        if (plugin.getCorpseRegistry().isKnockedOut(p)) {
+        if (plugin.getCorpseRegistry().isMovementStopped(p)) {
             e.setCancelled(true);
         }
     }
