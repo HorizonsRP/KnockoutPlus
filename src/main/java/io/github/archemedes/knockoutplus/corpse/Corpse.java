@@ -63,8 +63,10 @@ public class Corpse {
 	}
 
 	public void unregister() {
-		plugin.getCorpseRegistry().victims.remove(this.victim);
-		plugin.getCorpseRegistry().movementStopped.remove(this.victim);
+		while (plugin.getCorpseRegistry().victims.containsKey(this.victim) || plugin.getCorpseRegistry().movementStopped.contains(this.victim)) {
+			plugin.getCorpseRegistry().victims.remove(this.victim);
+			plugin.getCorpseRegistry().movementStopped.remove(this.victim);
+		}
 		if (this.killer != null) plugin.getCorpseRegistry().kills.remove(this.killer, this);
 	}
 }
