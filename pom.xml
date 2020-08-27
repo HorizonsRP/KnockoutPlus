@@ -22,10 +22,6 @@
             <url>http://repo.dmulloy2.net/content/groups/public/</url>
         </repository>
         <repository>
-            <id>lotc-release</id>
-            <url>https://repo.lordofthecraft.net/artifactory/lotc-releases/</url>
-        </repository>
-        <repository>
             <id>sk89q-repo</id>
             <url>http://maven.sk89q.com/repo/</url>
         </repository>
@@ -35,13 +31,13 @@
         <dependency>
             <groupId>com.destroystokyo.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.16.1-R0.1-SNAPSHOT</version>
+            <version>1.16.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
-            <version>1.16.1-R0.1-SNAPSHOT</version>
+            <version>1.16.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -100,7 +96,7 @@
         <dependency>
             <groupId>net.korvic</groupId>
             <artifactId>rppersonas</artifactId>
-            <version>1.16.0.8</version>
+            <version>1.16.2.2</version>
         </dependency>
     </dependencies>
 
