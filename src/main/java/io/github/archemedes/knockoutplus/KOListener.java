@@ -33,10 +33,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityResurrectEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -70,6 +67,14 @@ public class KOListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onMoveEvent(PlayerMoveEvent e) {
+        Player p = e.getPlayer();
+        if (plugin.getCorpseRegistry().isMovementStopped(p)) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onCrouchEvent(PlayerToggleSneakEvent e) {
         Player p = e.getPlayer();
         if (plugin.getCorpseRegistry().isMovementStopped(p)) {
             e.setCancelled(true);
