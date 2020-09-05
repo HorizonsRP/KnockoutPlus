@@ -165,6 +165,9 @@ public final class KnockoutPlus extends JavaPlugin {
         packet.getIntegers().write(0, v.getEntityId()).write(1, 2);
         protocolManager.broadcastServerPacket(packet, v, true);
 
+        Corpse corpse = corpseRegistry.getCorpse(v);
+        corpse.unregister();
+
         if (updateBlock) {
             for (Player t : v.getWorld().getPlayers()) {
                 t.sendBlockChange(new Location(l.getWorld(), l.getBlockX(), 0, l.getBlockZ()), Material.BEDROCK.createBlockData());
@@ -194,6 +197,10 @@ public final class KnockoutPlus extends JavaPlugin {
         if (l.getBlock().isLiquid()) { //adds water breathing if player dies in some form of liquid
         	player.addPotionEffect(new PotionEffect(PotionEffectType.WATER_BREATHING, 400, 100));
         }
+        if (l.getBlock().getType().equals(Material.LAVA)) { //adds fire resistance if player dies in lava
+            player.addPotionEffect(new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 400, 100));
+        }
+
         player.getWorld().spawnParticle(org.bukkit.Particle.HEART, player.getLocation(), 1);
 
         if (getServer().getPluginManager().isPluginEnabled("Omniscience")) {
