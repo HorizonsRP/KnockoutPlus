@@ -83,7 +83,6 @@ public class CorpseRegistry {
     }
 
     public void tick() {
-
         long now = System.currentTimeMillis();
         Iterator iter = victims.entrySet().iterator();
         while (iter.hasNext()) {
@@ -126,6 +125,18 @@ public class CorpseRegistry {
 
     public boolean isMovementStopped(Player p) {
         return movementStopped.contains(p.getUniqueId());
+    }
+
+    public void forceRemove(Player victim, Player killer) {
+        Corpse corpse = getCorpse(victim);
+        if (corpse != null && killer != null) {
+            plugin.getCorpseRegistry().kills.remove(killer.getUniqueId(), corpse);
+        }
+
+        while (plugin.getCorpseRegistry().victims.containsKey(victim.getUniqueId()) || plugin.getCorpseRegistry().movementStopped.contains(victim.getUniqueId())) {
+            plugin.getCorpseRegistry().victims.remove(victim.getUniqueId());
+            plugin.getCorpseRegistry().movementStopped.remove(victim.getUniqueId());
+        }
     }
 
     public Corpse getCorpse(Player p) {

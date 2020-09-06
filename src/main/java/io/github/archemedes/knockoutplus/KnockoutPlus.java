@@ -166,7 +166,11 @@ public final class KnockoutPlus extends JavaPlugin {
         protocolManager.broadcastServerPacket(packet, v, true);
 
         Corpse corpse = corpseRegistry.getCorpse(v);
-        corpse.unregister();
+        Player killer = null;
+        if (corpse != null) {
+            killer = Bukkit.getPlayer(corpse.getKiller());
+        }
+        corpseRegistry.forceRemove(v, killer);
 
         if (updateBlock) {
             for (Player t : v.getWorld().getPlayers()) {
